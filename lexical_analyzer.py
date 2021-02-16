@@ -1,3 +1,0 @@
-
-class LexicalAnalyzer:
-    pass
