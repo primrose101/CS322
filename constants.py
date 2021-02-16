@@ -1,0 +1,2 @@
+KW_START = 'START'
+KW_STOP = 'STOP'
