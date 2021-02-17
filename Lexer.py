@@ -46,7 +46,7 @@ class Lexer:
         elif (re.match(r'.', token)):
             type = self.parseSpecial(token)
         elif(token.isidentifier()):
-            type = Tokens.KW_VAR
+            type = Tokens.IDENTIFIER
         else:
             type = Tokens.ERROR
         return type
