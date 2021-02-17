@@ -9,9 +9,7 @@ class Lexer:
 
     def parse(self, statement):
         statement = self.replaceStmt(statement)
-        tokens = []
         tokens = statement.split(" ")
-        print(tokens)
         arrforlex = []
         actualvalue = []
         ctr = 0
@@ -35,9 +33,11 @@ class Lexer:
         return arrforlex, actualvalue
     
     def checktoken(self, token):
-        if(re.match(r'VAR [a-zA-Z_$][a-zA-Z_$0-9]*$', token)):
+        if(token.isidentifier()):
             type = Tokens.KW_VAR
-        if(re.match(r'^OUTPUT:\s*', token)):
+        elif(re.match(r'VAR [a-zA-Z_$][a-zA-Z_$0-9]*$', token)):
+            type = Tokens.KW_VAR
+        elif(re.match(r'^OUTPUT:\s*', token)):
             type = Tokens.KW_OUTPUT
         elif (re.match(r'((-*)\d+\.\d+)', token)):
             type = Tokens.KW_FLOAT
@@ -52,16 +52,14 @@ class Lexer:
         return type
 
     def parseAlpha(self, token):
-        if token == 'VAR':
-            type = Tokens.KW_VAR
-        elif token == 'AS':
+        if token == 'AS':
             type = Tokens.KW_AS
         elif token == 'INT':
-            type = Tokens.KW_INT
+            type = Tokens.INT
         elif token == 'CHAR':
             type = Tokens.CHAR
         elif token == 'FLOAT':
-            type = Tokens.KW_FLOAT
+            type = Tokens.FLOAT
         elif token == 'BOOL':
             type = Tokens.KW_BOOLEAN
         elif token == 'START':
@@ -77,9 +75,9 @@ class Lexer:
         elif token == 'NOT':
             type = Tokens.NOT
         elif token == 'TRUE':
-            type = Tokens.BOOL_TRUE
+            type = Tokens.TRUE
         elif token == 'FALSE':
-            type = Tokens.BOOL_FALSE
+            type = Tokens.FALSE
         return type
 
     def parseSpecial(self, token):
@@ -120,18 +118,11 @@ class Lexer:
         return type        
         
     def replaceStmt(self, statement):
-        statement = statement.replace(",", " , ")
-        statement = statement.replace("+", " + ")
-        statement = statement.replace("*", " * ")
-        statement = statement.replace("/", " / ")
-        statement = statement.replace("=", " = ")
-        statement = statement.replace("(", " ( ")
-        statement = statement.replace(")", " ) ")
-        statement = statement.replace("==", "= =")
-        statement = statement.replace("<=", "< =")
-        statement = statement.replace(">=", "> =")
-        statement = statement.replace("<>", " <> ")
-        statement = statement.replace(",", " , ")
+        symbol_list = [',','+', '*', '/', '=', '(', ')', '==', '<=', '>=', '<>', "," ]
+        
+        for symbol in symbol_list:
+            statement = statement.replace(symbol, '' + {symbol} + '')
+        
         return statement
 
 
