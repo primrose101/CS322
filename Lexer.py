@@ -33,9 +33,7 @@ class Lexer:
         return arrforlex, actualvalue
     
     def checktoken(self, token):
-        if(token.isidentifier()):
-            type = Tokens.KW_VAR
-        elif(re.match(r'VAR [a-zA-Z_$][a-zA-Z_$0-9]*$', token)):
+        if(re.match(r'VAR [a-zA-Z_$][a-zA-Z_$0-9]*$', token)):
             type = Tokens.KW_VAR
         elif(re.match(r'^OUTPUT:\s*', token)):
             type = Tokens.KW_OUTPUT
@@ -47,6 +45,8 @@ class Lexer:
             type = self.parseAlpha(token)
         elif (re.match(r'.', token)):
             type = self.parseSpecial(token)
+        elif(token.isidentifier()):
+            type = Tokens.KW_VAR
         else:
             type = Tokens.ERROR
         return type
