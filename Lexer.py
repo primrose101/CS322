@@ -40,9 +40,9 @@ class Lexer:
         elif(re.match(r'^OUTPUT:\s*', token)):
             type = Tokens.KW_OUTPUT
         elif (re.match(r'((-*)\d+\.\d+)', token)):
-            type = Tokens.KW_FLOAT
+            type = Tokens.FLOAT
         elif (re.match(r'((-*)\d)', token)):
-            type = Tokens.KW_INT
+            type = Tokens.INT
         elif (re.match(r'(^[a-zA-Z_$][a-zA-Z_$0-9]*$)', token)):
             type = self.parseAlpha(token)
         elif (re.match(r'.', token)):
@@ -55,11 +55,11 @@ class Lexer:
         if token == 'AS':
             type = Tokens.KW_AS
         elif token == 'INT':
-            type = Tokens.INT
+            type = Tokens.KW_INT
         elif token == 'CHAR':
             type = Tokens.CHAR
         elif token == 'FLOAT':
-            type = Tokens.FLOAT
+            type = Tokens.KW_FLOAT
         elif token == 'BOOL':
             type = Tokens.KW_BOOLEAN
         elif token == 'START':
