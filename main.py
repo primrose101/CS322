@@ -1,4 +1,16 @@
 from tkinter import *
+from Interpreter import check_completion
+
+
+def handle_run_click():
+    lines = text_editor.get("1.0", "end-1c").split('\n')
+    state = check_completion(lines)
+    message = 'Code is complete' if state else 'Code has errors'
+    console.config(state=NORMAL)
+    console.delete('1.0', END)
+    console.insert(END, message)
+    console.config(state=DISABLED)
+
 
 root = Tk()
 
@@ -6,7 +18,7 @@ root = Tk()
 text_editor = Text(root, width=80, height=50, bg="#ffffff", fg="#000000", bd=-3, insertbackground="#111111")
 console = Text(root, width=60, height=50, bd=-3, fg="#ffffff")
 frame = Frame(root, height=50, width=140)
-run_button = Button(frame, text="RUN", bg="#78AB46", fg="#ffffff")
+run_button = Button(frame, text="RUN", bg="#78AB46", fg="#ffffff", command=handle_run_click)
 line_numbers = Text(width=5, height=50, bg="#d3d3d3", bd=-3, fg="#111111")
 
 # UI States
@@ -21,8 +33,6 @@ root.title("CFPL Interpreter")
 line_numbers.grid(row=0, column=0)
 frame.grid(row=1, column=2, ipady=20)
 run_button.pack(side=RIGHT, anchor='e')
-
-# Functions
 
 
 def update_lines(count):

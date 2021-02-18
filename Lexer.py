@@ -1,10 +1,11 @@
 import re
-from Tokens import *
+import Tokens
+
 
 class Lexer:
     status = 0
 
-    def __init__ (self):
+    def __init__(self):
         status = 0
 
     def parse(self, statement):
@@ -31,7 +32,7 @@ class Lexer:
                 arrforlex.insert(ctr, type)
             actualvalue.insert(ctr, token)
         return arrforlex, actualvalue
-    
+
     def checktoken(self, token):
         if(re.match(r'VAR [a-zA-Z_$][a-zA-Z_$0-9]*$', token)):
             type = Tokens.KW_VAR
@@ -115,16 +116,12 @@ class Lexer:
             type = Tokens.NOT_EQUAL
         else:
             type = Tokens.ERROR
-        return type        
-        
+        return type
+
     def replaceStmt(self, statement):
-        symbol_list = [',','+', '*', '/', '=', '(', ')', '==', '<=', '>=', '<>', "," ]
-        
+        symbol_list = [',', '+', '*', '/', '=', '(', ')', '==', '<=', '>=', '<>', ","]
+
         for symbol in symbol_list:
             statement = statement.replace(symbol, '' + {symbol} + '')
-        
+
         return statement
-
-
-
-
