@@ -34,11 +34,9 @@ class Lexer:
         return arrforlex, actualvalue
 
     def checktoken(self, token):
-        if(re.match(r'VAR [a-zA-Z_$][a-zA-Z_$0-9]*$', token)):
-            type = Tokens.KW_VAR
-        elif(re.match(r'^OUTPUT:\s*', token)):
-            type = Tokens.KW_OUTPUT
-        elif (re.match(r'((-*)\d+\.\d+)', token)):
+        if re.match(r'\"(.+?)\"', token):
+            type = Tokens.STRING
+        if (re.match(r'((-*)\d+\.\d+)', token)):
             type = Tokens.FLOAT
         elif (re.match(r'((-*)\d)', token)):
             type = Tokens.INT
@@ -46,14 +44,16 @@ class Lexer:
             type = self.parseAlpha(token)
         elif (re.match(r'.', token)):
             type = self.parseSpecial(token)
-        elif(token.isidentifier()):
-            type = Tokens.IDENTIFIER
         else:
             type = Tokens.ERROR
         return type
 
     def parseAlpha(self, token):
-        if token == 'AS':
+        if token == 'VAR':
+            token = Tokens.KW_VAR
+        elif token == 'OUTPUT':
+            token = Tokens.KW_OUTPUT
+        elif token == 'AS':
             type = Tokens.KW_AS
         elif token == 'INT':
             type = Tokens.KW_INT
@@ -79,9 +79,13 @@ class Lexer:
             type = Tokens.TRUE
         elif token == 'FALSE':
             type = Tokens.FALSE
+        elif(token.isidentifier()):
+            type = Tokens.IDENTIFIER
         return type
 
     def parseSpecial(self, token):
+        if token == '&':
+            type = Tokens.CONCATENATOR
         if token == '=':
             type = Tokens.EQUALS
         elif token == '(':
@@ -110,7 +114,7 @@ class Lexer:
             type = Tokens.LESS_THAN
         elif token == '<=':
             type = Tokens.LESS_OR_EQUAL
-        elif token == '<>':
+        elif token == '==':
             type = Tokens.LOGIC_EQUAL
         elif token == '!=':
             type = Tokens.NOT_EQUAL
@@ -119,9 +123,9 @@ class Lexer:
         return type
 
     def replaceStmt(self, statement):
-        symbol_list = [',', '+', '*', '/', '=', '(', ')', '==', '<=', '>=', '<>', ","]
+        symbol_list = [',', '+', '*', '/', '==', '(', ')', '=', '<=', '>=', '&']
 
         for symbol in symbol_list:
             statement = statement.replace(symbol, '' + {symbol} + '')
 
-        return statement
+        return statement.replace('= =', '==')

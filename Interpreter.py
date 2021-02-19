@@ -1,7 +1,7 @@
 import re
 
 
-def check_completion(lines):
+def interpret(lines):
 
     state = 0
 
@@ -27,4 +27,4 @@ def check_completion(lines):
         if state == 3:
             break
 
-    return state == 2
+    return 'Code is complete' if state == 2 else 'Code has errors'
