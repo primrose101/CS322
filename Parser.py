@@ -2,7 +2,24 @@ import Tokens
 
 
 class Parser:
-    
+
+
+    def parse(self,token_stream):
+        stmnt = Tokens.ERROR
+
+        if self.assignment(token_stream) != Tokens.ERROR:
+            stmnt = self.assignment(token_stream)
+        elif self.outfut(token_stream) != Tokens.ERROR:
+            stmnt = self.outfut(token_stream)
+        elif self.inpout(token_stream) != Tokens.ERROR:
+            stmnt = self.outfut(token_stream)
+        elif self.declaration(token_stream) != Tokens.ERROR:
+            stmnt = self.declaration(token_stream)
+
+
+        return stmnt
+
+
     def assignment(self,token_stream):
         stateTable = [[1,4,4,4],
                       [4,2,4,4],
@@ -13,31 +30,31 @@ class Parser:
         infut = 0
 
         for token in token_stream:
-            if token == Tokens.IDENTIFIER:
+            if token[0] == Tokens.IDENTIFIER:
                 infut = 0
-            elif token == Tokens.EQUALS:
+            elif token[0] == Tokens.EQUALS:
                 infut = 1
-            elif token == Tokens.STRING:
+            elif token[0] == Tokens.STRING:
                 infut = 2
-            elif token == Tokens.CHAR:
+            elif token[0] == Tokens.CHAR:
                 infut = 2
-            elif token == Tokens.INT:
+            elif token[0] == Tokens.INT:
                 infut = 2
-            elif token == Tokens.FLOAT:
+            elif token[0] == Tokens.FLOAT:
                 infut = 2
-            elif token == Tokens.BOOL_FALSE:
+            elif token[0] == Tokens.BOOL_FALSE:
                 infut = 2
-            elif token == Tokens.BOOL_TRUE:
+            elif token[0] == Tokens.BOOL_TRUE:
                 infut = 2
-            elif token == Tokens.MULTIPLY:
+            elif token[0] == Tokens.MULTIPLY:
                 infut = 3
-            elif token == Tokens.DIVIDE:
+            elif token[0] == Tokens.DIVIDE:
                 infut = 3
-            elif token == Tokens.PLUS:
+            elif token[0] == Tokens.PLUS:
                 infut = 3
-            elif token == Tokens.MINUS:
+            elif token[0] == Tokens.MINUS:
                 infut = 3
-            elif token == Tokens.MODULO:
+            elif token[0] == Tokens.MODULO:
                 infut = 3
 
             state = stateTable[state][infut]
@@ -61,31 +78,31 @@ class Parser:
         infut = 0
 
         for token in token_stream:
-            if token == Tokens.KW_OUTPUT:
+            if token[0] == Tokens.KW_OUTPUT:
                 infut = 0
-            elif token == ':':
+            elif token[0] == Tokens.COLON:
                 infut = 1
-            elif token == Tokens.STRING:
+            elif token[0] == Tokens.STRING:
                 infut = 2
-            elif token == Tokens.CHAR:
+            elif token[0] == Tokens.CHAR:
                 infut = 2
-            elif token == Tokens.INT:
+            elif token[0] == Tokens.INT:
                 infut = 2
-            elif token == Tokens.FLOAT:
+            elif token[0] == Tokens.FLOAT:
                 infut = 2
-            elif token == Tokens.BOOL_FALSE:
+            elif token[0] == Tokens.BOOL_FALSE:
                 infut = 2
-            elif token == Tokens.BOOL_TRUE:
+            elif token[0] == Tokens.BOOL_TRUE:
                 infut = 2
-            elif token == Tokens.MULTIPLY:
+            elif token[0] == Tokens.MULTIPLY:
                 infut = 3
-            elif token == Tokens.DIVIDE:
+            elif token[0] == Tokens.DIVIDE:
                 infut = 3
-            elif token == Tokens.PLUS:
+            elif token[0] == Tokens.PLUS:
                 infut = 3
-            elif token == Tokens.MINUS:
+            elif token[0] == Tokens.MINUS:
                 infut = 3
-            elif token == Tokens.MODULO:
+            elif token[0] == Tokens.MODULO:
                 infut = 3
 
             state = stateTable[state][infut]
@@ -108,31 +125,31 @@ class Parser:
         infut = 0
 
         for token in token_stream:
-            if token == Tokens.KW_OUTPUT:
+            if token[0] == Tokens.KW_OUTPUT:
                 infut = 0
-            elif token == ':':
+            elif token[0] == Tokens.COLON:
                 infut = 1
-            elif token == Tokens.STRING:
+            elif token[0] == Tokens.STRING:
                 infut = 2
-            elif token == Tokens.CHAR:
+            elif token[0] == Tokens.CHAR:
                 infut = 2
-            elif token == Tokens.INT:
+            elif token[0] == Tokens.INT:
                 infut = 2
-            elif token == Tokens.FLOAT:
+            elif token[0] == Tokens.FLOAT:
                 infut = 2
-            elif token == Tokens.BOOL_FALSE:
+            elif token[0] == Tokens.BOOL_FALSE:
                 infut = 2
-            elif token == Tokens.BOOL_TRUE:
+            elif token[0] == Tokens.BOOL_TRUE:
                 infut = 2
-            elif token == Tokens.MULTIPLY:
+            elif token[0] == Tokens.MULTIPLY:
                 infut = 3
-            elif token == Tokens.DIVIDE:
+            elif token[0] == Tokens.DIVIDE:
                 infut = 3
-            elif token == Tokens.PLUS:
+            elif token[0] == Tokens.PLUS:
                 infut = 3
-            elif token == Tokens.MINUS:
+            elif token[0] == Tokens.MINUS:
                 infut = 3
-            elif token == Tokens.MODULO:
+            elif token[0] == Tokens.MODULO:
                 infut = 3
 
             state = stateTable[state][infut]
@@ -140,7 +157,7 @@ class Parser:
                 break
         
         if state == 3:
-            return "INPUT"
+            return Tokens.ST_INPUT
         else:
             return Tokens.ERROR
         
@@ -158,35 +175,35 @@ class Parser:
         infut = 0
 
         for token in token_stream:
-            if token == Tokens.KW_VAR:
+            if token[0] == Tokens.KW_VAR:
                 infut = 0
-            elif token == Tokens.IDENTIFIER:
+            elif token[0] == Tokens.IDENTIFIER:
                 infut = 1
-            elif token == Tokens.COMMA:
+            elif token[0] == Tokens.COMMA:
                 infut = 2
-            elif token == Tokens.KW_AS:
+            elif token[0] == Tokens.KW_AS:
                 infut = 3
-            elif token == Tokens.KW_INT:
+            elif token[0] == Tokens.KW_INT:
                 infut = 4
-            elif token == Tokens.KW_FLOAT:
+            elif token[0] == Tokens.KW_FLOAT:
                 infut = 4
-            elif token == Tokens.KW_STRING:
+            elif token[0] == Tokens.KW_STRING:
                 infut = 4
-            elif token == Tokens.KW_BOOLEAN:
+            elif token[0] == Tokens.KW_BOOLEAN:
                 infut = 4
-            elif token == Tokens.EQUALS:
+            elif token[0] == Tokens.EQUALS:
                 infut = 5
-            elif token == Tokens.STRING:
+            elif token[0] == Tokens.STRING:
                 infut = 6
-            elif token == Tokens.CHAR:
+            elif token[0] == Tokens.CHAR:
                 infut = 6
-            elif token == Tokens.INT:
+            elif token[0] == Tokens.INT:
                 infut = 6
-            elif token == Tokens.FLOAT:
+            elif token[0] == Tokens.FLOAT:
                 infut = 3
-            elif token == Tokens.BOOL_FALSE:
+            elif token[0] == Tokens.BOOL_FALSE:
                 infut = 6
-            elif token == Tokens.BOOL_TRUE:
+            elif token[0] == Tokens.BOOL_TRUE:
                 infut = 6
 
             state = stateTable[state][infut]
