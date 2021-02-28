@@ -5,15 +5,15 @@ class Parser:
 
 
     def parse(self,token_stream):
-        stmnt = Tokens.ERROR
+        stmnt = self.assignment(token_stream)
 
-        if self.assignment(token_stream) != Tokens.ERROR:
-            stmnt = self.assignment(token_stream)
-        elif self.outfut(token_stream) != Tokens.ERROR:
+        if stmnt == Tokens.ERROR:
             stmnt = self.outfut(token_stream)
-        elif self.inpout(token_stream) != Tokens.ERROR:
-            stmnt = self.outfut(token_stream)
-        elif self.declaration(token_stream) != Tokens.ERROR:
+
+        if stmnt == Tokens.ERROR:
+            stmnt = self.inpout(token_stream)
+            
+        if stmnt == Tokens.ERROR:
             stmnt = self.declaration(token_stream)
 
 
