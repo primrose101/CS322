@@ -1,4 +1,4 @@
-  
+
 # Keywords
 KW_START = 'START'
 KW_STOP = 'STOP'
@@ -9,6 +9,7 @@ KW_FLOAT = 'FLOATING'
 KW_STRING = 'STRING'
 KW_BOOLEAN = 'BOOL'
 KW_OUTPUT = 'OUT'
+KW_INPUT = 'INPUT'
 
 # LANGUAGE SPECIFICS
 NEWLINE = 'NL'  # Value is (#)
