@@ -3,8 +3,7 @@ import Tokens
 
 class Parser:
 
-
-    def parse(self,token_stream):
+    def parse(self, token_stream):
         stmnt = self.assignment(token_stream)
 
         if stmnt == Tokens.ERROR:
@@ -12,20 +11,18 @@ class Parser:
 
         if stmnt == Tokens.ERROR:
             stmnt = self.inpout(token_stream)
-            
+
         if stmnt == Tokens.ERROR:
             stmnt = self.declaration(token_stream)
 
-
         return stmnt
 
-
-    def assignment(self,token_stream):
-        stateTable = [[1,4,4,4],
-                      [4,2,4,4],
-                      [3,4,3,4],
-                      [4,4,4,2],
-                      [4,4,4,4]]
+    def assignment(self, token_stream):
+        stateTable = [[1, 4, 4, 4],
+                      [4, 2, 4, 4],
+                      [3, 4, 3, 4],
+                      [4, 4, 4, 2],
+                      [4, 4, 4, 4]]
         state = 0
         infut = 0
 
@@ -61,19 +58,17 @@ class Parser:
             if state == 4:
                 break
 
-        
         if state == 3:
             return Tokens.ST_ASSIGNMENT
         else:
             return Tokens.ERROR
 
-        
-    def outfut(self,token_stream):
-        stateTable = [[1,4,4,4],
-                      [4,2,4,4],
-                      [3,4,3,4],
-                      [4,4,4,2],
-                      [4,4,4,4]]
+    def outfut(self, token_stream):
+        stateTable = [[1, 4, 4, 4],
+                      [4, 2, 4, 4],
+                      [3, 4, 3, 4],
+                      [4, 4, 4, 2],
+                      [4, 4, 4, 4]]
         state = 0
         infut = 0
 
@@ -108,19 +103,19 @@ class Parser:
             state = stateTable[state][infut]
             if state == 4:
                 break
-        
+
         if state == 3:
             return Tokens.ST_OUTPUT
         else:
             return Tokens.ERROR
-        
-    def inpout(self,token_stream):
-        stateTable = [[1,5,5,5],
-                      [5,2,5,5],
-                      [5,5,3,5],
-                      [5,5,5,4],
-                      [5,5,3,5],
-                      [5,5,5,5]]
+
+    def inpout(self, token_stream):
+        stateTable = [[1, 5, 5, 5],
+                      [5, 2, 5, 5],
+                      [5, 5, 3, 5],
+                      [5, 5, 5, 4],
+                      [5, 5, 3, 5],
+                      [5, 5, 5, 5]]
         state = 0
         infut = 0
 
@@ -155,22 +150,21 @@ class Parser:
             state = stateTable[state][infut]
             if state == 4:
                 break
-        
+
         if state == 3:
             return Tokens.ST_INPUT
         else:
             return Tokens.ERROR
-        
 
-    def declaration(self,token_stream):
-        stateTable = [[1,7,7,7,7,7,7],
-                      [7,2,7,7,7,7,7],
-                      [7,7,1,3,7,5,7],
-                      [7,7,7,7,4,7,7],
-                      [7,7,7,7,7,7,7],
-                      [7,7,7,7,7,7,7],
-                      [7,7,1,7,7,7,7],
-                      [7,7,7,7,7,7,7]]
+    def declaration(self, token_stream):
+        stateTable = [[1, 7, 7, 7, 7, 7, 7],
+                      [7, 2, 7, 7, 7, 7, 7],
+                      [7, 7, 1, 3, 7, 5, 7],
+                      [7, 7, 7, 7, 4, 7, 7],
+                      [7, 7, 7, 7, 7, 7, 7],
+                      [7, 7, 7, 7, 7, 7, 7],
+                      [7, 7, 1, 7, 7, 7, 7],
+                      [7, 7, 7, 7, 7, 7, 7]]
         state = 0
         infut = 0
 
@@ -211,9 +205,7 @@ class Parser:
             if state == 7:
                 break
 
-        
         if state == 4 or state == 6:
             return Tokens.ST_DECLARATION
         else:
             return Tokens.ERROR
-        

@@ -1,4 +1,5 @@
 from Lexer import Lexer
+from Parser import Parser
 
 statement = """VAR world, hello = "Hey" as STRING
 VAR fl AS FLOAT
@@ -14,6 +15,13 @@ OUTPUT: hello & "hello"
 STOP"""
 
 lexer = Lexer()
+parser = Parser()
 
 for line in statement.split('\n'):
-    print(lexer.lexicalize(line))
+    token_stream = lexer.lexicalize(line)
+    if line == 'START':
+        print('START Keyword')
+    elif line == 'STOP':
+        print('STOP Keyword')
+    else:
+        print('Statement type: ' + parser.parse(token_stream))

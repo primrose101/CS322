@@ -1,9 +1,11 @@
 import re
+
+import StatusTypes
 import Tokens
 
 
 class Lexer:
-    status = True  # True if no errors, False otherwise
+    status = StatusTypes.STATUS_OK
 
     def lexicalize(self, statement):
         statement = self.replaceStmt(statement)
@@ -16,7 +18,7 @@ class Lexer:
             token_type = self.checktoken(token)
             token_stream.append([token_type, token])
             if token == Tokens.ERROR:
-                status = False
+                status = StatusTypes.STATUS_UNIDENTIFIED_TOKEN
                 break
 
         return token_stream
