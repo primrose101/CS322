@@ -16,12 +16,4 @@ STOP"""
 
 lexer = Lexer()
 parser = Parser()
-
-for line in statement.split('\n'):
-    token_stream = lexer.lexicalize(line)
-    if line == 'START':
-        print('START Keyword')
-    elif line == 'STOP':
-        print('STOP Keyword')
-    else:
-        print('Statement type: ' + parser.parse(token_stream))
+variables = dict()
