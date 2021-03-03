@@ -10,9 +10,13 @@ START
 INPUT: fl, in
 in = 1 + 2 / 3 * 1.0 % 100
 hello = "hello" & "world"
-bl = TRUE && FALSE == TRUE <= FALSE >= || TRUE
+bl = TRUE && FALSE == TRUE <= FALSE || TRUE
 OUTPUT: hello & "hello"
 STOP"""
+
+expressions = """in = 1 + 2 / 3 * 1.0 % 100
+hello = "hello" & "world"
+bl = TRUE && FALSE == (TRUE || FALSE ) && FALSE"""
 
 lexer = Lexer()
 parser = Parser()

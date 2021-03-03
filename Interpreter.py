@@ -1,8 +1,18 @@
-import re
+
+from Parser import Parser
+from Lexer import Lexer
+import StatusTypes
+import Tokens
 
 
 def interpret(lines, custom_input):
 
+    inputs = [line for line in custom_input.split('\n')]
+
+    status = StatusTypes.STATUS_MISSING_START
+
+    lexer = Lexer()
+    parser = Parser()
     state = 0
 
     state_table = [
@@ -11,17 +21,28 @@ def interpret(lines, custom_input):
         (3, 3, 3, 3)
     ]
 
-    for line in lines:
+    for line in lines.split('\n'):
+        input = 0
         if not line:
             continue
-        if re.match('\AVAR', line):
+
+        token_stream = lexer.lexicalize(line)
+        stmt_type = parser.parse(token_stream)
+        print(line)
+        print(stmt_type)
+
+        if stmt_type == Tokens.ST_DECLARATION:
             input = 0
-        elif line == 'START':
+        elif stmt_type == Tokens.ST_START:
             input = 1
-        elif line == 'STOP':
-            input = 3
-        else:               # line is a statement
+            status = StatusTypes.STATUS_MISSING_STOP
+
+        elif stmt_type in (Tokens.ST_ASSIGNMENT_LOGIC, Tokens.ST_ASSIGNMENT_MATH, Tokens.ST_ASSIGNMENT_STRING, Tokens.ST_INPUT, Tokens.ST_OUTPUT):
             input = 2
+
+        elif stmt_type == Tokens.ST_STOP:
+            input = 3
+            status = StatusTypes.STATUS_OK
 
         state = state_table[state][input]
         if state == 3:

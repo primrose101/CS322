@@ -135,6 +135,8 @@ class Parser:
                 infut = 3
             elif token[0] == Tokens.LOGIC_EQUAL:
                 infut = 3
+            elif token[0] == Tokens.NOT_EQUAL:
+                infut = 3
 
             state = stateTable[state][infut]
             if state == 4:
