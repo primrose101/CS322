@@ -1,7 +1,7 @@
 from Lexer import Lexer
 from Parser import Parser
 
-statement = """VAR world, hello = "Hey" as STRING
+statement = """VAR world, hello = "Hey" AS STRING
 VAR fl AS FLOAT
 VAR in AS INT
 VAR ch AS CHAR
@@ -17,3 +17,8 @@ STOP"""
 lexer = Lexer()
 parser = Parser()
 variables = dict()
+
+for line in statement.split('\n'):
+    token_stream = lexer.lexicalize(line)
+    print(token_stream)
+    print(parser.parse(token_stream))

@@ -17,52 +17,6 @@ class Parser:
 
         return stmnt
 
-    def assignment(self, token_stream):
-        stateTable = [[1, 4, 4, 4],
-                      [4, 2, 4, 4],
-                      [3, 4, 3, 4],
-                      [4, 4, 4, 2],
-                      [4, 4, 4, 4]]
-        state = 0
-        infut = 0
-
-        for token in token_stream:
-            if token[0] == Tokens.IDENTIFIER:
-                infut = 0
-            elif token[0] == Tokens.EQUALS:
-                infut = 1
-            elif token[0] == Tokens.STRING:
-                infut = 2
-            elif token[0] == Tokens.CHAR:
-                infut = 2
-            elif token[0] == Tokens.INT:
-                infut = 2
-            elif token[0] == Tokens.FLOAT:
-                infut = 2
-            elif token[0] == Tokens.BOOL_FALSE:
-                infut = 2
-            elif token[0] == Tokens.BOOL_TRUE:
-                infut = 2
-            elif token[0] == Tokens.MULTIPLY:
-                infut = 3
-            elif token[0] == Tokens.DIVIDE:
-                infut = 3
-            elif token[0] == Tokens.PLUS:
-                infut = 3
-            elif token[0] == Tokens.MINUS:
-                infut = 3
-            elif token[0] == Tokens.MODULO:
-                infut = 3
-
-            state = stateTable[state][infut]
-            if state == 4:
-                break
-
-        if state == 3:
-            return Tokens.ST_ASSIGNMENT
-        else:
-            return Tokens.ERROR
-
     def assignmentTree(self, token_stream):
         assZZ = self.string_assignment(token_stream)
 
@@ -100,7 +54,7 @@ class Parser:
                 break
 
         if state == 3:
-            return Tokens.ST_ASSIGNMENT
+            return Tokens.ST_ASSIGNMENT_STRING
         else:
             return Tokens.ERROR
 
@@ -138,7 +92,7 @@ class Parser:
                 break
 
         if state == 3:
-            return Tokens.ST_ASSIGNMENT
+            return Tokens.ST_ASSIGNMENT_MATH
         else:
             return Tokens.ERROR
 
@@ -180,7 +134,7 @@ class Parser:
                 break
 
         if state == 3:
-            return Tokens.ST_ASSIGNMENT
+            return Tokens.ST_ASSIGNMENT_LOGIC
         else:
             return Tokens.ERROR
 
@@ -206,6 +160,8 @@ class Parser:
                 infut = 3
             elif token[0] == Tokens.CONCATENATOR:
                 infut = 3
+            else:
+                infut = 4
 
             state = stateTable[state][infut]
             if state == 4:
@@ -239,7 +195,7 @@ class Parser:
             if state == 4:
                 break
 
-        if state == 2:
+        if state == 3:
             return Tokens.ST_INPUT
         else:
             return Tokens.ERROR
@@ -247,11 +203,11 @@ class Parser:
     def declaration(self, token_stream):
         stateTable = [[1, 7, 7, 7, 7, 7, 7],
                       [7, 2, 7, 7, 7, 7, 7],
-                      [7, 7, 1, 3, 7, 5, 7],
-                      [7, 7, 7, 7, 4, 7, 7],
+                      [7, 7, 1, 5, 7, 3, 7],
+                      [7, 7, 7, 7, 7, 7, 4],
                       [7, 7, 7, 7, 7, 7, 7],
-                      [7, 7, 7, 7, 7, 7, 7],
-                      [7, 7, 1, 3, 7, 7, 7],
+                      [7, 7, 7, 7, 6, 7, 7],
+                      [7, 7, 1, 7, 7, 7, 7],
                       [7, 7, 7, 7, 7, 7, 7]]
         state = 0
         infut = 0
@@ -263,31 +219,13 @@ class Parser:
                 infut = 1
             elif token[0] == Tokens.COMMA:
                 infut = 2
-            elif token[0] == Tokens.KW_AS:
-                infut = 3
-            elif token[0] == Tokens.KW_INT:
-                infut = 4
-            elif token[0] == Tokens.KW_FLOAT:
-                infut = 4
-            elif token[0] == Tokens.KW_STRING:
-                infut = 4
-            elif token[0] == Tokens.KW_CHAR:
-                infut = 4
-            elif token[0] == Tokens.KW_BOOLEAN:
-                infut = 4
             elif token[0] == Tokens.EQUALS:
-                infut = 5
-            elif token[0] == Tokens.STRING:
-                infut = 6
-            elif token[0] == Tokens.CHAR:
-                infut = 6
-            elif token[0] == Tokens.INT:
-                infut = 6
-            elif token[0] == Tokens.FLOAT:
                 infut = 3
-            elif token[0] == Tokens.BOOL_FALSE:
-                infut = 6
-            elif token[0] == Tokens.BOOL_TRUE:
+            elif token[0] in (Tokens.INT, Tokens.FLOAT, Tokens.STRING, Tokens.CHAR, Tokens.BOOL_TRUE, Tokens.BOOL_FALSE):
+                infut = 4
+            elif token[0] == Tokens.KW_AS:
+                infut = 5
+            elif token[0] in (Tokens.KW_INT, Tokens.KW_FLOAT, Tokens.KW_STRING, Tokens.KW_CHAR, Tokens.KW_BOOLEAN):
                 infut = 6
 
             state = stateTable[state][infut]
@@ -295,7 +233,7 @@ class Parser:
             if state == 7:
                 break
 
-        if state == 4 or state == 6:
+        if state == 4:
             return Tokens.ST_DECLARATION
         else:
             return Tokens.ERROR

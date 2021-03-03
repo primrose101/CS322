@@ -48,7 +48,7 @@ class Lexer:
         elif token == 'INT':
             type = Tokens.KW_INT
         elif token == 'CHAR':
-            type = Tokens.CHAR
+            type = Tokens.KW_CHAR
         elif token == 'FLOAT':
             type = Tokens.KW_FLOAT
         elif token == 'BOOL':
