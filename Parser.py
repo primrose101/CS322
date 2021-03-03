@@ -4,6 +4,13 @@ import Tokens
 class Parser:
 
     def parse(self, token_stream):
+
+        if len(token_stream) == 1:
+            if token_stream[0][0] == Tokens.KW_START:
+                return Tokens.ST_START
+            elif token_stream[0][0] == Tokens.KW_STOP:
+                return Tokens.ST_STOP
+
         stmnt = self.assignmentTree(token_stream)
 
         if stmnt == Tokens.ERROR:
@@ -207,7 +214,7 @@ class Parser:
                       [7, 7, 7, 7, 7, 7, 4],
                       [7, 7, 7, 7, 7, 7, 7],
                       [7, 7, 7, 7, 6, 7, 7],
-                      [7, 7, 1, 7, 7, 7, 7],
+                      [7, 7, 1, 7, 7, 3, 7],
                       [7, 7, 7, 7, 7, 7, 7]]
         state = 0
         infut = 0

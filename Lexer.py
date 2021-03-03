@@ -131,5 +131,4 @@ class Lexer:
             statement = statement.replace('=  =', '==')
             statement = statement.replace('&  &', '&&')
 
-        print(statement)
         return statement

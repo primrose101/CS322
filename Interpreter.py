@@ -1,7 +1,7 @@
 import re
 
 
-def interpret(lines):
+def interpret(lines, custom_input):
 
     state = 0
 

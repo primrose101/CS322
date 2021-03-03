@@ -1,6 +1,7 @@
 # UI for CIT-U's First Programming Language
 
-from tkinter import (Text, Frame, Button, RIGHT, DISABLED, NORMAL, END)
+from tkinter import (Label, Text, Frame, Button, RIGHT, DISABLED, NORMAL, END)
+from tkinter.constants import LEFT
 from Interpreter import interpret
 
 
@@ -15,8 +16,20 @@ class Editor:
                                 fg="#000000", bd=-3, insertbackground="#111111")
         self.text_editor.grid(row=0, column=1)
 
-        self.console = Text(master, width=50, height=30, bd=-3, fg="#ffffff")
-        self.console.grid(row=0, column=2)
+        self.console_frame = Frame(master, width=50, height=30)
+        self.console_frame.grid(row=0, column=2)
+
+        self.input_label = Label(self.console_frame, width=10, height=1, bd=-3, fg="#c3cbd6", text="Input ")
+        self.input_label.grid(row=0, column=0)
+
+        self.input = Text(self.console_frame, width=50, height=14, bd=-3, fg="#ffffff", bg="#2e3845")
+        self.input.grid(row=1, column=0)
+
+        self.output_label = Label(self.console_frame, width=10, height=1, bd=-3, fg="#c3cbd6", text="Output ")
+        self.output_label.grid(row=2, column=0)
+
+        self.console = Text(self.console_frame, width=50, height=13, bd=-3, fg="#ffffff", bg="#2e3845")
+        self.console.grid(row=3, column=0)
         self.console.config(state=DISABLED)
 
         self.frame = Frame(master, height=50, width=140)
@@ -40,6 +53,9 @@ class Editor:
         text = self.text_editor.get("1.0", "end-1c")
         self.line_count = len(text.split("\n"))  # updates line_count every time text is get
         return self.text_editor.get("1.0", "end-1c")
+
+    def get_input_text(self):
+        return self.input.get("1.0", "end-1c")
 
     def get_line_count_bs(self, event):
         text = self.get_text()
@@ -66,7 +82,8 @@ class Editor:
     def run(self):
         self.console.config(state=NORMAL)
         code = self.get_text()
-        message = interpret(code)
+        input = self.get_input_text()
+        message = interpret(code, input)
         self.console.delete('1.0', END)
         self.console.insert(END, message)
         self.console.config(state=DISABLED)
