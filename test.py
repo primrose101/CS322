@@ -1,5 +1,7 @@
+from MathExpression import MathExpression
 from Lexer import Lexer
 from Parser import Parser
+import Tokens
 
 statement = """VAR world, hello = "Hey" AS STRING
 VAR fl AS FLOAT
@@ -10,19 +12,22 @@ START
 INPUT: fl, in
 in = 1 + 2 / 3 * 1.0 % 100
 hello = "hello" & "world"
-bl = TRUE && FALSE == TRUE <= FALSE || TRUE
+bl = TRUE && FALSE == TRUE <= FALSE >= || TRUE
 OUTPUT: hello & "hello"
 STOP"""
 
-expressions = """in = 1 + 2 / 3 * 1.0 % 100
-hello = "hello" & "world"
-bl = TRUE && FALSE == (TRUE || FALSE ) && FALSE"""
+math_expression = 'in = ((3 + 9) / 3 * 6 % 5)'
+boolean_expression = 'bl = TRUE && FALSE == (TRUE || FALSE ) && FALSE'
+string_expression = "'hey' & 'you'"
 
 lexer = Lexer()
 parser = Parser()
+math_evaluator = MathExpression()
 variables = dict()
 
-for line in statement.split('\n'):
+for line in math_expression.split('\n'):
     token_stream = lexer.lexicalize(line)
-    print(token_stream)
+    print(token_stream[2:])
+    value = math_evaluator.evaluate(token_stream[2:], variables, Tokens.INT)
+    print(value)
     print(parser.parse(token_stream))

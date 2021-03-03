@@ -66,11 +66,11 @@ class Parser:
             return Tokens.ERROR
 
     def math_assignment(self, token_stream):
-        stateTable = [[1, 4, 4, 4],
-                      [4, 2, 4, 4],
-                      [3, 4, 3, 4],
-                      [4, 4, 4, 2],
-                      [4, 4, 4, 4]]
+        stateTable = [[1, 4, 4, 4, 4, 4],
+                      [4, 2, 4, 4, 4, 4],
+                      [3, 4, 3, 4, 2, 4],
+                      [4, 4, 4, 2, 4, 3],
+                      [4, 4, 4, 4, 4, 4]]
         state = 0
         infut = 0
 
@@ -93,6 +93,10 @@ class Parser:
                 infut = 3
             elif token[0] == Tokens.MODULO:
                 infut = 3
+            elif token[0] == Tokens.PAREN_OPEN:
+                infut = 4
+            elif token[0] == Tokens.PAREN_CLOSE:
+                infut = 5
 
             state = stateTable[state][infut]
             if state == 4:

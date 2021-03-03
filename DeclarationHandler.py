@@ -7,9 +7,8 @@ import Tokens
 
 class DeclarationHandler:
 
-    def handle_declaration(self, token_stream: list):
+    def handle_declaration(self, token_stream, variables):
         variable_type = token_stream[-1][0]
-        variables = dict()
 
         token_stream = token_stream[1:len(token_stream)-2]
         new_length = len(token_stream) - 1

@@ -1,22 +1,22 @@
 import Tokens
 
+
 class MathExpression:
 
     def __init__(self):
         self.value = 0
 
+    def evaluate(self, token_stream, varmap={}, e_type=Tokens.INT):
+        stack = self.infixToPostfix(token_stream, varmap)
+        final_value = self.calculate(stack)
 
-    def evaluate(self, token, actualtoken, varmap):
-        stack = self.infixToPostfix(token, actualtoken)
-        val = self.calculate(stack, varmap)
-        var = varmap.get(actualtoken[0])
-        var[0] = val
-        varmap[actualtoken[0]] = var
-        return varmap
+        if e_type == Tokens.INT:
+            final_value = int(final_value)
 
-    def calculate(self, stack, varmap):
+        return final_value
+
+    def calculate(self, stack):
         values = []
-        idx = 0
         for token in stack:
             if token in ['+', '-', '*', '/', '%']:
                 right = values.pop()
@@ -33,12 +33,10 @@ class MathExpression:
                     val = left % right
                 values.append(val)
             else:
-                val = varmap[token[0]]
-                values.append(val)
-            idx += 1
+                values.append(token)
         return values[0]
 
-    def infixToPostfix(self, tokenList, actualtoken):
+    def infixToPostfix(self, token_stream, varmap):
         prec = {}
         prec["*"] = 3
         prec["/"] = 3
@@ -46,36 +44,31 @@ class MathExpression:
         prec["+"] = 2
         prec["-"] = 2
         prec["("] = 1
+
         opStack = []
         postfixList = []
-        idx = 0
-        for token in tokenList:
-            if idx == 0:
-                idx += 1
-                continue
-            elif (token == Tokens.INT or
-                token == Tokens.FLOAT):
-                postfixList.append(actualtoken[idx])
+
+        for token, token_value in token_stream:
+            if (token == Tokens.IDENTIFIER):
+                postfixList.append(varmap[token_value]['value'])
+            elif (token == Tokens.INT):
+                postfixList.append(int(token_value))
+            elif (token == Tokens.FLOAT):
+                postfixList.append(float(token_value))
             elif token == Tokens.PAREN_OPEN:
-                opStack.append(actualtoken[idx])
+                opStack.append(token_value)
             elif token == Tokens.PAREN_CLOSE:
                 topToken = opStack.pop()
                 while topToken != '(':
                     postfixList.append(topToken)
                     topToken = opStack.pop()
-            elif token == Tokens.EQUALS:
-                idx += 1
-                continue
             else:
                 while (not len(opStack) == 0) and \
-                (prec[opStack[len(opStack)-1]] >= prec[actualtoken[idx]]):
+                        (prec[opStack[-1]] >= prec[token_value]):
                     postfixList.append(opStack.pop())
-                opStack.append(actualtoken[idx])
-            idx += 1
+                opStack.append(token_value)
 
         while not len(opStack) == 0:
             postfixList.append(opStack.pop())
+
         return postfixList
-
-            
-
