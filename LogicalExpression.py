@@ -36,6 +36,9 @@ class LogicalExpression:
     def token_to_value(self, tokenized_value):
         return tokenized_value == 'TRUE'
 
+    def raw_to_token(self, raw_bool):
+        return 'TRUE' if raw_bool else 'FALSE'
+
     def infixToPostfix(self, token_stream, varmap):
         opStack = []
         postfixList = []
