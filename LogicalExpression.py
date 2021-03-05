@@ -41,8 +41,6 @@ class LogicalExpression:
         postfixList = []
 
         for token, token_value in token_stream:
-            print(opStack)
-            print(postfixList)
             if token == Tokens.IDENTIFIER:
                 postfixList.append(varmap[token_value]['value'])
             elif token in [Tokens.BOOL_TRUE, Tokens.BOOL_FALSE]:

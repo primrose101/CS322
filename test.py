@@ -29,7 +29,6 @@ variables = dict()
 
 for line in boolean_expression.split('\n'):
     token_stream = lexer.lexicalize(line)
-    # print(token_stream[2:])
     value = logic_evaluator.evaluate(token_stream[2:], variables)
     print(value)
     print(parser.parse(token_stream))
