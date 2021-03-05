@@ -107,7 +107,7 @@ class Lexer:
             type = Tokens.LESS_OR_EQUAL
         elif token == '==':
             type = Tokens.LOGIC_EQUAL
-        elif token == '!=':
+        elif token == '<>':
             type = Tokens.NOT_EQUAL
         elif token == '||':
             type = Tokens.OR
@@ -122,7 +122,7 @@ class Lexer:
         return type
 
     def replaceStmt(self, statement):
-        symbol_list = [',', '+', '*', '/', '==', '(', ')', '=', '<', '>', '<=', '>=', '&&', ':', '&', '||']
+        symbol_list = [',', '+', '*', '/', '<>', '==', '(', ')', '=', '<', '>', '<=', '>=', '&&', ':', '&', '||']
 
         for symbol in symbol_list:
             statement = statement.replace(symbol, ' ' + symbol + ' ')
@@ -130,5 +130,6 @@ class Lexer:
             statement = statement.replace('>  =', '>=')
             statement = statement.replace('=  =', '==')
             statement = statement.replace('&  &', '&&')
+            statement = statement.replace('<  >', '<>')
 
         return statement

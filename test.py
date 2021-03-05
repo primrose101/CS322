@@ -1,3 +1,4 @@
+from LogicalExpression import LogicalExpression
 from MathExpression import MathExpression
 from Lexer import Lexer
 from Parser import Parser
@@ -17,17 +18,18 @@ OUTPUT: hello & "hello"
 STOP"""
 
 math_expression = 'in = ((3 + 9) / 3 * 6 % 5)'
-boolean_expression = 'bl = TRUE && FALSE == (TRUE || FALSE ) && FALSE'
+boolean_expression = 'bl = 100 && FALSE == (TRUE || FALSE ) == 100.0'
 string_expression = "'hey' & 'you'"
 
 lexer = Lexer()
 parser = Parser()
 math_evaluator = MathExpression()
+logic_evaluator = LogicalExpression()
 variables = dict()
 
-for line in math_expression.split('\n'):
+for line in boolean_expression.split('\n'):
     token_stream = lexer.lexicalize(line)
-    print(token_stream[2:])
-    value = math_evaluator.evaluate(token_stream[2:], variables, Tokens.INT)
+    # print(token_stream[2:])
+    value = logic_evaluator.evaluate(token_stream[2:], variables)
     print(value)
     print(parser.parse(token_stream))
