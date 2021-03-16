@@ -29,7 +29,7 @@ class dataTypeLexer:
 
             i += 1
 
-        return i
+        return i - index
 
     def float_lexer(self,string_input, index):
         i = index
@@ -59,7 +59,7 @@ class dataTypeLexer:
 
             i += 1
 
-        return i
+        return i - index
     
     def char_lexer(self,string_input, index):
         i = index
@@ -90,7 +90,7 @@ class dataTypeLexer:
 
             i += 1
 
-        return i
+        return i - index
     
     def string_lexer(self,string_input, index):
         i = index
@@ -120,7 +120,7 @@ class dataTypeLexer:
 
             i += 1
 
-        return i
+        return i - index
 
     def trueBool_lexer(self,string_input, index):
         i = index
@@ -156,7 +156,7 @@ class dataTypeLexer:
 
             i += 1
 
-        return i
+        return i - index
 
     def falseBool_lexer(self,string_input, index):
         i = index
@@ -195,7 +195,7 @@ class dataTypeLexer:
 
             i += 1
 
-        return i
+        return i - index
 
     def unary_lexer(self,string_input, index):
         i = index
@@ -226,4 +226,4 @@ class dataTypeLexer:
 
             i += 1
 
-        return i 
+        return i - index
