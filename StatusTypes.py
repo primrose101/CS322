@@ -2,7 +2,7 @@
 Statuses that the cfpl would undergo along with their error messages
 """
 
-STATUS_OK = 'OKAY'
+STATUS_OK = 'Okay'
 STATUS_UNIDENTIFIED_TOKEN = 'Unidentified token '
 STATUS_UNDEFINED_VARIABLE = 'Undefined variable '
 STATUS_INVALID_OPERATION = 'Invalid operation '
@@ -16,5 +16,5 @@ STATUS_ERROR_ON_STRING = 'Invalid operand on string'
 STATUS_ERROR_ON_FLOAT = 'Invalid operand on float'
 STATUS_ERROR_ON_INT = 'Invalid operand on int'
 STATUS_ERROR_ON_BOOL = 'Invalid operand on boolean'
-STATUS_ERROR_ON_CHAR = 'Invalid operand on char'
+STATUS_ERROR_ON_CHAR = 'Invalid operand/operator on char'
 STATUS_INVALID_ASSIGNMENT = 'Invalid assignment '

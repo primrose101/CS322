@@ -1,3 +1,4 @@
+from re import error
 from StatusTypes import STATUS_OK
 import Tokens
 import StatusTypes
@@ -7,6 +8,8 @@ class SemanticAnalyzer:
 
     def __init__(self):
         self.status = StatusTypes.STATUS_OK
+        self.error_type = None
+        self.error_variable = None
 
     # works
     # checks if assignments on variables matches on type declaration
@@ -14,14 +17,18 @@ class SemanticAnalyzer:
         is_valid = True
         if statement_type == Tokens.ST_DECLARATION:
             is_valid = self.is_valid_declaration(token_stream)
-        elif statement_type == Tokens.ST_ASSIGNMENT_MATH_INT:
+        elif statement_type == Tokens.ST_ASSIGNMENT_STRICT_INT:
             is_valid = self.is_valid_int_statement(token_stream, variables)
         elif statement_type == Tokens.ST_ASSIGNMENT_LOGIC:
             is_valid = self.is_valid_bool_statement(token_stream, variables)
-        elif statement_type == Tokens.ST_ASSIGNMENT_MATH_FLOAT:
+        elif statement_type == Tokens.ST_ASSIGNMENT_STRICT_FLOAT:
             is_valid = self.is_valid_float_statement(token_stream, variables)
         elif statement_type == Tokens.ST_ASSIGNMENT_STRICT_STRING:
             is_valid = self.is_valid_string_statement(token_stream, variables)
+        elif statement_type == Tokens.ST_INPUT:
+            is_valid = self.is_valid_input_statement(token_stream, variables)
+        elif statement_type == Tokens.ST_OUTPUT:
+            is_valid = self.is_valid_output_statement(token_stream, variables)
         else:
             is_valid = self.is_valid_char_statement(token_stream, variables)
 
@@ -52,7 +59,7 @@ class SemanticAnalyzer:
             if token_type in (Tokens.PLUS, Tokens.MINUS, Tokens.DIVIDE, Tokens.MULTIPLY, Tokens.MODULO, Tokens.EQUALS, Tokens.INT):
                 continue
             if token_type == Tokens.IDENTIFIER:
-                if variables.has_key(value):
+                if value in variables:
                     if variables[value]['type'] == Tokens.INT:
                         continue
                     else:
@@ -77,7 +84,7 @@ class SemanticAnalyzer:
             if token_type in (Tokens.PLUS, Tokens.MINUS, Tokens.DIVIDE, Tokens.MULTIPLY, Tokens.EQUALS, Tokens.INT, Tokens.FLOAT):
                 continue
             if token_type == Tokens.IDENTIFIER:
-                if variables.has_key(value):
+                if value in variables:
                     if variables[value]['type'] in (Tokens.FLOAT, Tokens.INT):
                         continue
                     else:
@@ -101,13 +108,46 @@ class SemanticAnalyzer:
             if token_type in (Tokens.CONCATENATOR, Tokens.STRING, Tokens.CHAR):
                 continue
             if token_type == Tokens.IDENTIFIER:
-                if variables.has_key(value):
+                if value in variables:
                     if variables[value]['type'] in (Tokens.STRING, Tokens.CHAR):
                         continue
                     else:
                         self.status = StatusTypes.STATUS_ERROR_ON_STRING
                         is_valid = False
                         break
+                else:
+                    self.status = StatusTypes.STATUS_UNDEFINED_VARIABLE
+                    is_valid = False
+                    break
+
+        return is_valid
+
+    def is_valid_output_statement(self, token_stream, variables):
+
+        ignored_values = (Tokens.CONCATENATOR, Tokens.STRING, Tokens.CHAR, Tokens.COLON,
+                          Tokens.KW_OUTPUT, Tokens.INT, Tokens.FLOAT, Tokens.BOOL_TRUE, Tokens.BOOL_FALSE)
+        is_valid = True
+        for token_type, value in token_stream:
+            if token_type in ignored_values:
+                continue
+            if token_type == Tokens.IDENTIFIER:
+                if value in variables:
+                    continue
+                else:
+                    self.status = StatusTypes.STATUS_UNDEFINED_VARIABLE
+                    is_valid = False
+                    break
+
+        return is_valid
+
+    def is_valid_input_statement(self, token_stream, variables):
+        is_valid = True
+        for token_type, value in token_stream:
+            if token_type in (Tokens.COMMA, Tokens.COLON, Tokens.KW_INPUT):
+                continue
+            if token_type == Tokens.IDENTIFIER:
+                if value in variables:
+                    continue
                 else:
                     self.status = StatusTypes.STATUS_UNDEFINED_VARIABLE
                     is_valid = False
@@ -129,7 +169,7 @@ class SemanticAnalyzer:
             if token_type in ignored_values:
                 continue
             if token_type == Tokens.IDENTIFIER:
-                if variables.has_key(value):
+                if value in variables:
                     if variables[value]['type'] in data_types:
                         continue
                     else:
@@ -144,12 +184,12 @@ class SemanticAnalyzer:
         return is_valid
 
     def is_valid_char_statement(self, token_stream, variables):
-        if len(token_stream) != 3:
+        if len(token_stream) != 3 or token_stream[2][0] != Tokens.CHAR:
             self.status = StatusTypes.STATUS_ERROR_ON_CHAR
             return False
 
         if token_stream[2][0] == Tokens.IDENTIFIER:
-            if variables.has_key(value := token_stream[2][1]):
+            if (value := token_stream[2][1]) in variables:
                 if variables[value]['type'] == Tokens.CHAR:
                     return True
                 else:

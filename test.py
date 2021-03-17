@@ -20,8 +20,8 @@ OUTPUT: hello & "hello"
 STOP"""
 
 math_expression = 'in = ((3 + 9) / 3 * 6 % 5)'
-boolean_expression = 'bl = 100 && FALSE == (TRUE || FALSE ) == 100.0'
-string_expression = "'hey' & 'you'"
+boolean_expression = 'he = 100 && FALSE == (TRUE || FALSE ) == 100.0'
+string_expression = "hey = 3 % 24"
 
 dec_stmt_no_error = 'VAR hello = \'h\' AS STRING'
 dec_stmt_no_values = 'VAR hey = 3.57, world = 4.0 AS FLOAT'
@@ -35,12 +35,13 @@ math_evaluator = MathExpression()
 logic_evaluator = LogicalExpression()
 semantics = SemanticAnalyzer()
 variables = {
-    'hey': {'value': 'hello', 'type': Tokens.STRING}
+    'hey': {'value': 'C', 'type': Tokens.CHAR}
 }
 
-for line in dec_stmt_no_values.split('\n'):
+for line in string_expression.split('\n'):
     token_stream = lexer.lexicalize(line)
     stmt_type = parser.parse_tokens(token_stream)
-    is_valid = semantics.semantic_analyze(token_stream, Tokens.ST_DECLARATION, variables)
+    is_valid = semantics.semantic_analyze(token_stream, Tokens.ST_ASSIGNMENT_MATH_FLOAT, variables)
     print(token_stream)
+    print(is_valid)
     print(semantics.status)
