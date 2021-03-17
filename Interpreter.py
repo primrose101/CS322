@@ -40,6 +40,8 @@ def interpret(lines, custom_input):
         elif stmt_type in (Tokens.ST_ASSIGNMENT_LOGIC, Tokens.ST_ASSIGNMENT_MATH, Tokens.ST_ASSIGNMENT_STRING, Tokens.ST_INPUT, Tokens.ST_OUTPUT):
             input = 2
 
+            # TODO: determine and separate math assignments (float, int) and string_assignment (string, char)
+
         elif stmt_type == Tokens.ST_STOP:
             input = 3
             status = StatusTypes.STATUS_OK
