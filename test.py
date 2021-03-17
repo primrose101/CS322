@@ -1,3 +1,4 @@
+from DeclarationHandler import DeclarationHandler
 from LogicalExpression import LogicalExpression
 from MathExpression import MathExpression
 from Lexer import Lexer
@@ -21,14 +22,20 @@ math_expression = 'in = ((3 + 9) / 3 * 6 % 5)'
 boolean_expression = 'bl = 100 && FALSE == (TRUE || FALSE ) == 100.0'
 string_expression = "'hey' & 'you'"
 
+dec_stmt_no_error = 'VAR hello = "hello" AS STRING'
+dec_stmt_no_values = 'VAR hey = "a value", world AS STRING'
+
 lexer = Lexer()
 parser = Parser()
+dec_handler = DeclarationHandler()
 math_evaluator = MathExpression()
 logic_evaluator = LogicalExpression()
 variables = dict()
 
-for line in boolean_expression.split('\n'):
+for line in dec_stmt_no_values.split('\n'):
     token_stream = lexer.lexicalize(line)
-    value = logic_evaluator.evaluate(token_stream[2:], variables)
-    print(value)
-    print(parser.parse(token_stream))
+    stmt_type = parser.parse_tokens(token_stream)
+    print(token_stream)
+    if stmt_type == Tokens.ST_DECLARATION:
+        variables = dec_handler.handle_declaration(token_stream, variables)
+        print(variables)

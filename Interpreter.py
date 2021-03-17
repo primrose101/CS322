@@ -27,7 +27,7 @@ def interpret(lines, custom_input):
             continue
 
         token_stream = lexer.lexicalize(line)
-        stmt_type = parser.parse(token_stream)
+        stmt_type = parser.parse_tokens(token_stream)
         print(line)
         print(stmt_type)
 

@@ -15,13 +15,13 @@ class DeclarationHandler:
         index = 0
 
         while(index < new_length):
-            name = token_stream[index][0]
+            name = token_stream[index][1]
             if token_stream[index+1][0] == Tokens.EQUALS:
                 value = self.set_value_by_type(token_stream[index+2][1], variable_type)
-                variables[name] = {'value': value, 'type': variable_type}
+                variables[name] = {'value': value, 'type': self.set_variable_by_keyword(variable_type)}
                 index += 4
             else:
-                variables[name] = {'value': None, 'type': variable_type}
+                variables[name] = {'value': None, 'type': self.set_variable_by_keyword(variable_type)}
                 index += 2
 
         return variables
@@ -35,5 +35,17 @@ class DeclarationHandler:
             return float(value)
         if type == Tokens.KW_BOOLEAN:
             return value == Tokens.BOOL_TRUE
+
+    def set_variable_by_keyword(self, variable_type):
+        if variable_type == Tokens.KW_STRING:
+            return Tokens.STRING
+        if variable_type == Tokens.KW_CHAR:
+            return Tokens.CHAR
+        if variable_type == Tokens.KW_INT:
+            return Tokens.INT
+        if variable_type == Tokens.KW_FLOAT:
+            return Tokens.FLOAT
+        if variable_type == Tokens.KW_BOOLEAN:
+            return Tokens.BOOL
 
         return None

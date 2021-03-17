@@ -3,7 +3,7 @@ import Tokens
 
 class Parser:
 
-    def parse(self, token_stream):
+    def parse_tokens(self, token_stream):
 
         if len(token_stream) == 1:
             if token_stream[0][0] == Tokens.KW_START:
@@ -152,8 +152,6 @@ class Parser:
 
             state = stateTable[state][infut]
 
-            print(token)
-            print(state)
             if state == 4:
                 break
 
