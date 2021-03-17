@@ -128,7 +128,9 @@ class Parser:
             elif token[0] == Tokens.INT:
                 infut = 2
             elif token[0] == Tokens.FLOAT:
-                infut = 0
+                infut = 2
+            elif token[0] in (Tokens.CHAR, Tokens.STRING):
+                infut = 2
             elif token[0] == Tokens.AND:
                 infut = 3
             elif token[0] == Tokens.OR:

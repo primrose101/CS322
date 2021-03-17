@@ -52,6 +52,8 @@ class LogicalExpression:
                 postfixList.append(int(token_value))
             elif token == Tokens.FLOAT:
                 postfixList.append(float(token_value))
+            elif token in (Tokens.STRING, Tokens.CHAR):
+                postfixList.append(token_value)
             elif token == Tokens.PAREN_OPEN:
                 opStack.append(token_value)
             elif token == Tokens.PAREN_CLOSE:
