@@ -482,3 +482,33 @@ def kwcolon_fsm(string_input, index):
 
     return i - index
 
+def kwcomma_fsm(string_input, index):
+    i = index
+
+    table = [
+        [1,2],
+        [2,2],
+        [2,2],
+        
+    ]
+
+    state = 0
+    inputstate = 0
+
+    string_length = len(string_input)
+
+    while i != string_length:
+        if string_input[i] == ',':
+            inputstate = 0
+        else:
+            inputstate = 1
+
+        state = table[state][inputstate]
+
+        if state == 2:
+            break
+
+        i += 1
+
+    return i - index
+
