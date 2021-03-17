@@ -16,10 +16,16 @@ class StringExpression:
             if token_type == Tokens.CONCATENATOR:
                 continue
             if token_type == Tokens.IDENTIFIER:
-                string_value = variables[token]['value']
+                temp = variables[token]['value']
+                if (type := variables[token]['type']) in (Tokens.STRING, Tokens.CHAR):
+                    # [1:-1] --> removes single/double quotes
+                    string_value = temp[1:-1]
+                elif type in (Tokens.INT, Tokens.FLOAT):
+                    string_value = str(temp)
+                else:  # if BOOL_TRUE or BOOL FALSE
+                    string_value = temp
             elif token_type == Tokens.STRING:
-                # [1:-2] --> remove single quotes or double quotes
-                string_value = self.process_string(token[1:len(token)-1])
+                string_value = self.process_string(token[1:-1])
             else:  # if Tokens.CHAR
                 string_value = token[1] if token[1] != '#' else '\n'
 
@@ -39,9 +45,13 @@ class StringExpression:
                     processed += string[i+1]
                     i += 3
                 else:
-                    self.status = StatusTypes.STATUS_MISSING_OPEN_BRAC
-                    self.error_string = string
+                    self.status = StatusTypes.STATUS_MISSING_CLOSE_BRAC
+                    self.error_string = f'"{string}"'
                     break
+            elif string[i] == ']':
+                self.status = StatusTypes.STATUS_MISSING_OPEN_BRAC
+                self.error_string = f'"{string}"'
+                break
             elif string[i] == '#':
                 processed += '\n'
                 i += 1

@@ -21,9 +21,10 @@ def interpret(lines, custom_input):
         (3, 3, 3, 3)
     ]
 
-    for line in lines.split('\n'):
+    for line_number, line in enumerate(lines.split('\n'), 1):
+
         input = 0
-        if not line:
+        if not line or line.startswith('*'):  # comment algorithm
             continue
 
         token_stream = lexer.lexicalize(line)

@@ -37,7 +37,7 @@ string_evaluator = StringExpression()
 logic_evaluator = LogicalExpression()
 semantics = SemanticAnalyzer()
 variables = {
-    'char': {'value': 'C', 'type': Tokens.CHAR}
+    'char': {'value': 3.0, 'type': Tokens.INT}
 }
 
 for line in string_expression.split('\n'):
@@ -51,3 +51,5 @@ for line in string_expression.split('\n'):
     result = string_evaluator.evaluate(token_stream[2:], variables)
 
     print(result)
+    print(string_evaluator.status)
+    print(string_evaluator.error_string)
