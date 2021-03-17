@@ -34,10 +34,11 @@ class dataTypeLexer:
     def float_lexer(self,string_input, index):
         i = index
 
-        state_table = [[1,3,3],
-                       [1,2,3],
-                       [2,3,3],
-                       [3,3,3],]
+        state_table = [[1,4,4],
+                       [1,2,4],
+                       [3,4,4],
+                       [3,4,4],
+                       [4,4,4],]
         
         state = 0
         infut = 0
@@ -65,7 +66,7 @@ class dataTypeLexer:
         i = index
 
         state_table = [[1,4,4],
-                       [2,2,4],
+                       [3,2,4],
                        [3,4,4],
                        [4,4,4],
                        [4,4,4],]
@@ -222,6 +223,62 @@ class dataTypeLexer:
             state = state_table[state][infut]
 
             if state == 2:
+                break
+
+            i += 1
+
+        return i - index
+    
+    def increment_lexer(self,string_input, index):
+        i = index
+
+        state_table = [[1,3],
+                       [2,3],
+                       [3,3],
+                       [3,3],]
+        
+        state = 0
+        infut = 0
+
+        string_length = len(string_input)
+
+        while i != string_length:
+            if string_input[i] == '+':
+                infut = 0
+            else:
+                infut = 1
+
+            state = state_table[state][infut]
+
+            if state == 3:
+                break
+
+            i += 1
+
+        return i - index
+
+    def decrement_lexer(self,string_input, index):
+        i = index
+
+        state_table = [[1,3],
+                       [2,3],
+                       [3,3],
+                       [3,3],]
+        
+        state = 0
+        infut = 0
+
+        string_length = len(string_input)
+
+        while i != string_length:
+            if string_input[i] == '-':
+                infut = 0
+            else:
+                infut = 1
+
+            state = state_table[state][infut]
+
+            if state == 3:
                 break
 
             i += 1
