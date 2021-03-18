@@ -10,19 +10,20 @@ class DeclarationHandler:
     def handle_declaration(self, token_stream, variables):
         variable_type = token_stream[-1][0]
 
-        token_stream = token_stream[1:len(token_stream)-2]
-        new_length = len(token_stream) - 1
+        token_stream = token_stream[1:-2]
+        new_length = len(token_stream)
         index = 0
 
         while(index < new_length):
             name = token_stream[index][1]
-            if token_stream[index+1][0] == Tokens.EQUALS:
-                value = self.set_value_by_type(token_stream[index+2][1], variable_type)
-                variables[name] = {'value': value, 'type': self.set_variable_by_keyword(variable_type)}
-                index += 4
-            else:
-                variables[name] = {'value': None, 'type': self.set_variable_by_keyword(variable_type)}
-                index += 2
+            if token_stream[index][0] == Tokens.IDENTIFIER:
+                if index + 1 < new_length and token_stream[index+1][0] == Tokens.EQUALS:
+                    value = self.set_value_by_type(token_stream[index+2][1], variable_type)
+                    variables[name] = {'value': value, 'type': self.set_variable_by_keyword(variable_type)}
+                    index += 4
+                else:
+                    variables[name] = {'value': None, 'type': self.set_variable_by_keyword(variable_type)}
+                    index += 2
 
         return variables
 
