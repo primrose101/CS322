@@ -1,3 +1,4 @@
+from InputHandler import InputHandler
 from DeclarationHandler import DeclarationHandler
 from LogicalExpression import LogicalExpression
 from MathExpression import MathExpression
@@ -22,10 +23,15 @@ STOP"""
 
 math_expression = 'in = ((3 + 9) / 3 * 6 % 5)'
 boolean_expression = 'he = 100 && FALSE == (TRUE || FALSE ) == 100.0'
-string_expression = 'hey = "NI" & char & "[#]" \'#\' & char'
+string_expression = 'hey = "NI" & char & "[#]" & \'#\' & char'
 
 dec_stmt_no_error = 'VAR hello = \'h\' AS STRING'
 dec_stmt_no_values = 'VAR hey = 3.57, world = 4.0 AS FLOAT'
+
+test_string = 'VAR hello, hey AS STRING\nINPUT: hey, hello'
+
+test_inputs = 'hi! gwyneth,'
+
 
 # semantics test
 
@@ -36,20 +42,19 @@ math_evaluator = MathExpression()
 string_evaluator = StringExpression()
 logic_evaluator = LogicalExpression()
 semantics = SemanticAnalyzer()
-variables = {
-    'char': {'value': 3.0, 'type': Tokens.INT}
-}
+input_handler = InputHandler()
+inputs = test_inputs.split(' ')
 
-for line in string_expression.split('\n'):
+variables = dict()
+
+for line in test_string.split('\n'):
     token_stream = lexer.lexicalize(line)
     stmt_type = parser.parse_tokens(token_stream)
-    is_valid = semantics.semantic_analyze(token_stream, Tokens.ST_ASSIGNMENT_STRICT_STRING, variables)
+    print(stmt_type)
     print(token_stream)
-    print(is_valid)
-    print(semantics.status)
+    if stmt_type == Tokens.ST_DECLARATION:
+        variables = dec_handler.handle_declaration(token_stream, variables)
+    elif stmt_type == Tokens.ST_INPUT:
+        variables = input_handler.assign_inputs(token_stream[2::2], inputs, variables)
 
-    result = string_evaluator.evaluate(token_stream[2:], variables)
-
-    print(result)
-    print(string_evaluator.status)
-    print(string_evaluator.error_string)
+    print(variables)
