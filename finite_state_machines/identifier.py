@@ -38,6 +38,6 @@ def iden_fsm(string_input, index):
     return i - index
 
 
-#test
+# test
 
 print(iden_fsm('STRING123', 0))

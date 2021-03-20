@@ -44,6 +44,6 @@ def logicalop_fsm(string_input, index):
     return i - index
 
 
-#test
+# test
 
 print(logicalop_fsm('&a', 0))
