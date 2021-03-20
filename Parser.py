@@ -1,7 +1,14 @@
 import Tokens
+import StatusTypes
 
 
 class Parser:
+
+    def __init__(self) -> None:
+        self.status = StatusTypes.STATUS_OK
+        self.error_type = None
+        self.error_value = None
+        self.longest_match = 0
 
     def parse_tokens(self, token_stream):
 
@@ -22,6 +29,8 @@ class Parser:
         if stmnt == Tokens.ERROR:
             stmnt = self.declaration(token_stream)
 
+        if stmnt == Tokens.ERROR:
+            self.status = StatusTypes.STATUS_UNIDENTIFIED_TOKEN
         return stmnt
 
     def assignmentTree(self, token_stream):
@@ -178,7 +187,7 @@ class Parser:
                 infut = 1
             elif token[0] == Tokens.IDENTIFIER:
                 infut = 2
-            elif token[0] == Tokens.STRING:
+            elif token[0] in (Tokens.STRING, Tokens.CHAR):
                 infut = 2
             elif token[0] == Tokens.COMMA:
                 infut = 3

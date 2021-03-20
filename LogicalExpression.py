@@ -70,8 +70,6 @@ class LogicalExpression:
         while opStack:
             postfixList.append(opStack.pop())
 
-        print(postfixList)
-
         return postfixList
 
     def calculate(self, stack):

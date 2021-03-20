@@ -3,7 +3,7 @@ Statuses that the cfpl would undergo along with their error messages
 """
 
 STATUS_OK = 'Okay'
-STATUS_UNIDENTIFIED_TOKEN = 'Unidentified token '
+STATUS_UNIDENTIFIED_TOKEN = 'Invalid token '
 STATUS_UNDEFINED_VARIABLE = 'Undefined variable '
 STATUS_INVALID_OPERATION = 'Invalid operation '
 STATUS_MODULO_ON_FLOAT = 'Operator modulo(%) can\'t be operated on type float'

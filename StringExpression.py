@@ -31,7 +31,7 @@ class StringExpression:
 
             result += string_value
 
-        return result
+        return f'"{result}"'
 
     def process_string(self, string):
         processed = str()

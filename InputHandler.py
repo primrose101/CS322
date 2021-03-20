@@ -11,6 +11,8 @@ class InputHandler:
     # assumes token_stream has only every variable separated by comma
     def assign_inputs(self, token_stream, inputs, variables):
 
+        inputs = inputs.split(' ')
+
         if (idens := len(token_stream)) != (values := len(inputs)):
             self.status = f'Expected {idens} inputs but got {values}'
             return

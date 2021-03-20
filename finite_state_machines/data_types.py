@@ -106,11 +106,11 @@ def true_bool_lexer(string_input, index):
     while i != string_length:
         if string_input[i] == 'T':
             infut = 0
-        elif string_input[i] == 'r':
+        elif string_input[i] == 'R':
             infut = 1
-        elif string_input[i] == 'u':
+        elif string_input[i] == 'U':
             infut = 2
-        elif string_input[i] == 'e':
+        elif string_input[i] == 'E':
             infut = 3
         else:
             infut = 4
@@ -137,13 +137,13 @@ def false_bool_lexer(string_input, index):
     while i != string_length:
         if string_input[i] == 'F':
             infut = 0
-        elif string_input[i] == 'a':
+        elif string_input[i] == 'A':
             infut = 1
-        elif string_input[i] == 'l':
+        elif string_input[i] == 'L':
             infut = 2
-        elif string_input[i] == 's':
+        elif string_input[i] == 'S':
             infut = 3
-        elif string_input[i] == 'e':
+        elif string_input[i] == 'E':
             infut = 4
         else:
             infut = 5

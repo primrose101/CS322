@@ -11,8 +11,6 @@ class SemanticAnalyzer:
         self.error_type = None
         self.error_variable = None
 
-    # works
-    # checks if assignments on variables matches on type declaration
     def semantic_analyze(self, token_stream, statement_type, variables):
         is_valid = True
         if statement_type == Tokens.ST_DECLARATION:
@@ -38,6 +36,7 @@ class SemanticAnalyzer:
         type_of_iden = token_stream[-1][0]
         length = len(token_stream)
         for i in range(length):
+            # TODO: check if variable is already defined
             token_type = token_stream[i][0]
             if token_type == Tokens.EQUALS:
                 value_type = token_stream[i+1][0]
@@ -56,6 +55,7 @@ class SemanticAnalyzer:
     def is_valid_int_statement(self, token_stream, variables):
         is_valid = True
         for token_type, value in token_stream:
+            # TODO: check if variable is used and not initialized
             if token_type in (Tokens.PLUS, Tokens.MINUS, Tokens.DIVIDE, Tokens.MULTIPLY, Tokens.MODULO, Tokens.EQUALS, Tokens.INT):
                 continue
             if token_type == Tokens.IDENTIFIER:
