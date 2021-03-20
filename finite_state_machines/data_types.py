@@ -45,7 +45,7 @@ def float_lexer(string_input, index):
         else:
             infut = 4
         state = state_table[state][infut]
-        if state == 4:
+        if state == 3:
             break
         i += 1
     return i - index
