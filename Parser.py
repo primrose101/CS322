@@ -172,11 +172,11 @@ class Parser:
             return Tokens.ERROR
 
     def outfut(self, token_stream):
-        stateTable = [[1, 4, 4, 4, 4, 4],
-                      [4, 2, 4, 4, 4, 4],
-                      [4, 4, 3, 4, 4, 3],
-                      [4, 4, 4, 2, 2, 4],
-                      [4, 4, 4, 4, 4, 4]]
+        stateTable = [[1, 4, 4, 4, 4],
+                      [4, 2, 4, 4, 4],
+                      [4, 4, 3, 4, 3],
+                      [4, 4, 4, 2, 4],
+                      [4, 4, 4, 4, 4]]
         state = 0
         infut = 0
 
@@ -189,8 +189,6 @@ class Parser:
                 infut = 2
             elif token[0] in (Tokens.STRING, Tokens.CHAR):
                 infut = 2
-            elif token[0] == Tokens.COMMA:
-                infut = 3
             elif token[0] == Tokens.CONCATENATOR:
                 infut = 3
             else:

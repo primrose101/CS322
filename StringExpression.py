@@ -23,9 +23,11 @@ class StringExpression:
                 elif type in (Tokens.INT, Tokens.FLOAT):
                     string_value = str(temp)
                 else:  # if BOOL_TRUE or BOOL FALSE
-                    string_value = temp
+                    string_value = 'TRUE' if temp else 'FALSE'
             elif token_type == Tokens.STRING:
                 string_value = self.process_string(token[1:-1])
+            elif token_type in (Tokens.BOOL, Tokens.BOOL_TRUE, Tokens.BOOL_FALSE):
+                string_value = token
             else:  # if Tokens.CHAR
                 string_value = token[1] if token[1] != '#' else '\n'
 

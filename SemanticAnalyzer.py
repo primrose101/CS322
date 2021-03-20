@@ -36,7 +36,6 @@ class SemanticAnalyzer:
         type_of_iden = token_stream[-1][0]
         length = len(token_stream)
         for i in range(length):
-            # TODO: check if variable is already defined
             token_type = token_stream[i][0]
             if token_type == Tokens.EQUALS:
                 value_type = token_stream[i+1][0]
@@ -60,10 +59,15 @@ class SemanticAnalyzer:
                 continue
             if token_type == Tokens.IDENTIFIER:
                 if value in variables:
-                    if variables[value]['type'] == Tokens.INT:
+                    if variables[value]['value'] is None:
+                        is_valid = False
+                        self.status = f'{StatusTypes.STATUS_USED_BUT_NOT_INITIALIZED} --> \'{value}\''
+                        break
+                    elif variables[value]['type'] == Tokens.INT:
                         continue
                     else:
                         is_valid = False
+                        self.status = StatusTypes.STATUS_ERROR_ON_INT
                         break
                 else:
                     self.status = StatusTypes.STATUS_UNDEFINED_VARIABLE
@@ -85,7 +89,11 @@ class SemanticAnalyzer:
                 continue
             if token_type == Tokens.IDENTIFIER:
                 if value in variables:
-                    if variables[value]['type'] in (Tokens.FLOAT, Tokens.INT):
+                    if variables[value]['value'] is None:
+                        is_valid = False
+                        self.status = f'{StatusTypes.STATUS_USED_BUT_NOT_INITIALIZED} --> \'{value}\''
+                        break
+                    elif variables[value]['type'] in (Tokens.FLOAT, Tokens.INT):
                         continue
                     else:
                         self.status = StatusTypes.STATUS_ERROR_ON_FLOAT
@@ -109,7 +117,11 @@ class SemanticAnalyzer:
                 continue
             if token_type == Tokens.IDENTIFIER:
                 if value in variables:
-                    if variables[value]['type'] in (Tokens.STRING, Tokens.CHAR):
+                    if variables[value]['value'] is None:
+                        is_valid = False
+                        self.status = f'{StatusTypes.STATUS_USED_BUT_NOT_INITIALIZED} --> \'{value}\''
+                        break
+                    elif variables[value]['type'] in (Tokens.STRING, Tokens.CHAR):
                         continue
                     else:
                         self.status = StatusTypes.STATUS_ERROR_ON_STRING
@@ -132,6 +144,10 @@ class SemanticAnalyzer:
                 continue
             if token_type == Tokens.IDENTIFIER:
                 if value in variables:
+                    if variables[value]['value'] is None:
+                        is_valid = False
+                        self.status = f'{StatusTypes.STATUS_USED_BUT_NOT_INITIALIZED} --> \'{value}\''
+                        break
                     continue
                 else:
                     self.status = StatusTypes.STATUS_UNDEFINED_VARIABLE
@@ -170,7 +186,11 @@ class SemanticAnalyzer:
                 continue
             if token_type == Tokens.IDENTIFIER:
                 if value in variables:
-                    if variables[value]['type'] in data_types:
+                    if variables[value]['value'] is None:
+                        is_valid = False
+                        self.status = f'{StatusTypes.STATUS_USED_BUT_NOT_INITIALIZED} --> \'{value}\''
+                        break
+                    elif variables[value]['type'] in data_types:
                         continue
                     else:
                         self.status = StatusTypes.STATUS_ERROR_ON_BOOL
@@ -184,14 +204,19 @@ class SemanticAnalyzer:
         return is_valid
 
     def is_valid_char_statement(self, token_stream, variables):
-        if len(token_stream) != 3 or token_stream[2][0] != Tokens.CHAR:
+
+        is_valid = True
+        if len(token_stream) != 1 or token_stream[0][0] not in (Tokens.CHAR, Tokens.IDENTIFIER):
             self.status = StatusTypes.STATUS_ERROR_ON_CHAR
             return False
 
-        if token_stream[2][0] == Tokens.IDENTIFIER:
-            if (value := token_stream[2][1]) in variables:
+        if token_stream[0][0] == Tokens.IDENTIFIER:
+            if (value := token_stream[0][1]) in variables:
+                if variables[value]['value'] is None:
+                    is_valid = False
+                    self.status = f'{StatusTypes.STATUS_USED_BUT_NOT_INITIALIZED} --> \'{value}\''
                 if variables[value]['type'] == Tokens.CHAR:
-                    return True
+                    is_valid = True
                 else:
                     self.status = StatusTypes.STATUS_ERROR_ON_CHAR
                     is_valid = False
@@ -199,4 +224,4 @@ class SemanticAnalyzer:
                 self.status = StatusTypes.STATUS_UNDEFINED_VARIABLE
                 is_valid = False
 
-        return True
+        return is_valid
