@@ -13,7 +13,7 @@ import Tokens
 statement = """
 VAR world, hello = "Hey" AS STRING
 VAR fl = 108.5 AS FLOAT
-VAR in = 112, in2, fl AS INT
+VAR in = 112, in2, in3 AS INT
 VAR ch AS CHAR
 VAR bl = TRUE AS BOOL
 START
