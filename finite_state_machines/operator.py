@@ -9,7 +9,7 @@ def operator_fsm(string_input, index):
 
     table = [
         (1, 2),
-        (2, 1),
+        (2, 2),
         (2, 2),
     ]
     state = 0
@@ -17,7 +17,7 @@ def operator_fsm(string_input, index):
     string_length = len(string_input)
 
     while i < string_length:
-        if string_input[i] in ('+', '-', '*', '/', '%'):
+        if string_input[i] in ('+', '-', '*', '/', '%', '&', '(', ')'):
             infut = 0
         else:
             infut = 1
@@ -30,8 +30,3 @@ def operator_fsm(string_input, index):
         i += 1
 
     return i - index
-
-
-#test
-
-print(operator_fsm('*', 0))

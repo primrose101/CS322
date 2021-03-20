@@ -1,18 +1,23 @@
 def int_lexer(string_input, index):
     i = index
-    state_table = [[0, 1],
-                   [1, 1], ]
+    state_table = [[1, 1, 1, 2],
+                   [2, 2, 1, 2],
+                   [2, 2, 2, 2], ]
 
     state = 0
     infut = 0
     string_length = len(string_input)
     while i != string_length:
-        if string_input[i].isdigit():
+        if string_input[i] == '-':
             infut = 0
-        else:
+        elif string_input[i] == '+':
             infut = 1
+        elif string_input[i].isdigit():
+            infut = 2
+        else:
+            infut = 3
         state = state_table[state][infut]
-        if state == 1:
+        if state == 2:
             break
         i += 1
     return i - index
@@ -20,21 +25,25 @@ def int_lexer(string_input, index):
 
 def float_lexer(string_input, index):
     i = index
-    state_table = [[1, 3, 3],
-                   [1, 2, 3],
-                   [2, 3, 3],
-                   [3, 3, 3], ]
+    state_table = [[1, 1, 1, 3, 3],
+                   [3, 3, 1, 2, 3],
+                   [3, 3, 2, 3, 3],
+                   [3, 3, 3, 3, 3], ]
 
     state = 0
     infut = 0
     string_length = len(string_input)
     while i != string_length:
-        if string_input[i].isdigit():
+        if string_input[i] == '-':
             infut = 0
-        elif string_input[i] == '.':
+        elif string_input[i] == '+':
             infut = 1
-        else:
+        elif string_input[i].isdigit():
             infut = 2
+        elif string_input[i] == '.':
+            infut = 3
+        else:
+            infut = 4
         state = state_table[state][infut]
         if state == 3:
             break
@@ -44,11 +53,11 @@ def float_lexer(string_input, index):
 
 def char_lexer(string_input, index):
     i = index
-    state_table = [[1, 4, 4],
-                   [2, 2, 4],
-                   [3, 4, 4],
-                   [4, 4, 4],
-                   [4, 4, 4], ]
+    state_table = [(1, 4),
+                   (4, 2),
+                   (3, 4),
+                   (4, 4),
+                   (4, 4)]
 
     state = 0
     infut = 0
@@ -56,10 +65,8 @@ def char_lexer(string_input, index):
     while i != string_length:
         if string_input[i] == '\'':
             infut = 0
-        elif string_input[i] >= 32 and string_input[i] <= 126:
-            infut = 1
         else:
-            infut = 2
+            infut = 1
         state = state_table[state][infut]
         if state == 4:
             break
@@ -69,10 +76,10 @@ def char_lexer(string_input, index):
 
 def string_lexer(string_input, index):
     i = index
-    state_table = [[1, 3, 3],
-                   [2, 1, 3],
-                   [3, 3, 3],
-                   [3, 3, 3], ]
+    state_table = [(1, 3),
+                   (2, 1),
+                   (3, 3),
+                   (3, 3)]
 
     state = 0
     infut = 0
@@ -80,10 +87,8 @@ def string_lexer(string_input, index):
     while i != string_length:
         if string_input[i] == '"':
             infut = 0
-        elif string_input[i] >= 32 and string_input[i] <= 126:
-            infut = 1
         else:
-            infut = 2
+            infut = 1
         state = state_table[state][infut]
         if state == 3:
             break
