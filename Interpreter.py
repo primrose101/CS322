@@ -15,12 +15,16 @@ def interpret(lines, custom_input):
 
     inputs = [line for line in custom_input.split('\n')]
 
+    for i in range(5):
+        inputs.append(str())
+
     input_index = 0
     completion_status = StatusTypes.STATUS_MISSING_START
 
     output = str()
     variables = {}
 
+    # Functions to use in compiling
     lexer = Lexer()
     parser = Parser()
     dec_handler = DeclarationHandler()
@@ -44,7 +48,7 @@ def interpret(lines, custom_input):
 
         is_valid = True
 
-        if not line or line.startswith('*'):  # comment algorithm
+        if not line.strip() or line.startswith('*'):  # comment algorithm
             continue
 
         token_stream = lexer.lexicalize(line)
@@ -52,11 +56,6 @@ def interpret(lines, custom_input):
         if parser.status != StatusTypes.STATUS_OK:
             return f'At line {line_number}: {parser.status}'
 
-        # debugging
-        # print(stmt_type)
-        # print(variables)
-
-        # TODO: separate strict assignment types
         if stmt_type == Tokens.ST_DECLARATION:
             infut = 0
             if semantics.semantic_analyze(token_stream, stmt_type, variables):
@@ -130,6 +129,8 @@ def interpret(lines, custom_input):
                             e_type = Tokens.INT
                         variables[variable_name]['value'] = math_evaluator.evaluate(
                             token_stream[2::], variables, e_type)
+                        if not math_evaluator.status == StatusTypes.STATUS_OK:
+                            return f'At line {line_number}: {math_evaluator.status}'
                     else:
                         variables[variable_name]['value'] = logic_evaluator.evaluate(token_stream[2::], variables)
                 else:

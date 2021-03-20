@@ -1,19 +1,32 @@
 import Tokens
+import StatusTypes
 
 
 class MathExpression:
 
     def __init__(self):
         self.value = 0
+        self.status = StatusTypes.STATUS_OK
 
     def evaluate(self, token_stream, varmap={}, e_type=Tokens.INT):
-        stack = self.infixToPostfix(token_stream, varmap)
-        final_value = self.calculate(stack)
 
-        if e_type == Tokens.INT:
-            final_value = int(final_value)
+        try:
+            stack = self.infixToPostfix(token_stream, varmap)
+            final_value = self.calculate(stack)
 
-        return final_value
+            if e_type == Tokens.INT:
+                final_value = int(final_value)
+
+            return final_value
+        except IndexError:
+            self.status = StatusTypes.STATUS_MISSING_OPEN_PAR
+            return 0
+        except TypeError:
+            self.status = StatusTypes.STATUS_MISSING_CLOSE_PAR
+            return 0
+        except ZeroDivisionError:
+            self.status = StatusTypes.STATUS_ZERO_DIVISION
+            return 0
 
     def calculate(self, stack):
         values = []

@@ -12,6 +12,7 @@ class InputHandler:
     def assign_inputs(self, token_stream, inputs, variables):
 
         inputs = inputs.split(' ')
+        inputs = [i for i in inputs if i]
 
         if (idens := len(token_stream)) != (values := len(inputs)):
             self.status = f'Expected {idens} inputs but got {values}'
