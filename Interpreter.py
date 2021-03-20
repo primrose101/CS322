@@ -144,7 +144,6 @@ def interpret(lines, custom_input):
             break
 
     if state == 2:
-        print(variables)
         return output
     else:
         return completion_status
