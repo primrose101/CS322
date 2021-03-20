@@ -122,6 +122,8 @@ def interpret(lines, custom_input):
                 if is_valid:
                     if stmt_type in (Tokens.ST_ASSIGNMENT_STRICT_CHAR, Tokens.ST_ASSIGNMENT_STRICT_STRING):
                         variables[variable_name]['value'] = string_evaluator.evaluate(token_stream[2::], variables)
+                        if not string_evaluator.status == StatusTypes.STATUS_OK:
+                            return f'At line {line_number}: {string_evaluator.status}'
                     elif stmt_type in (Tokens.ST_ASSIGNMENT_STRICT_FLOAT, Tokens.ST_ASSIGNMENT_STRICT_INT):
                         if stmt_type == Tokens.ST_ASSIGNMENT_STRICT_FLOAT:
                             e_type = Tokens.FLOAT
@@ -133,12 +135,16 @@ def interpret(lines, custom_input):
                             return f'At line {line_number}: {math_evaluator.status}'
                     else:
                         variables[variable_name]['value'] = logic_evaluator.evaluate(token_stream[2::], variables)
+                        if not logic_evaluator.status == StatusTypes.STATUS_OK:
+                            return f'At line {line_number}: {logic_evaluator.status}'
                 else:
                     return f'At line {line_number}: {semantics.status}'
 
             if stmt_type == Tokens.ST_OUTPUT:
                 if semantics.semantic_analyze(token_stream, stmt_type, variables):
                     temp = string_evaluator.evaluate(token_stream[2:], variables)
+                    if not string_evaluator.status == StatusTypes.STATUS_OK:
+                        return f'At line {line_number}: {string_evaluator.status}'
                     output += temp[1:-1]  # remove quotes
                 else:
                     return f'At line {line_number}: {semantics.status}'
