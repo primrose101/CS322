@@ -89,16 +89,11 @@ def kwinteger_fsm(string_input, index):
     i = index
 
     table = [
-        [1, 8, 8, 8, 8, 8, 8, 8],
-        [8, 2, 8, 8, 8, 8, 8, 8],
-        [8, 8, 3, 8, 8, 8, 8, 8],
-        [8, 8, 8, 4, 8, 8, 8, 8],
-        [8, 8, 8, 8, 5, 8, 8, 8],
-        [8, 8, 8, 6, 8, 8, 8, 8],
-        [8, 8, 8, 8, 8, 8, 7, 8],
-        [8, 8, 8, 8, 8, 8, 8, 8],
-        [8, 8, 8, 8, 8, 8, 8, 8],
-
+        [1, 4, 4, 4],
+        [4, 2, 4, 4],
+        [4, 4, 3, 4],
+        [4, 4, 4, 4],
+        [4, 4, 4, 4],
     ]
 
     state = 0
@@ -113,20 +108,12 @@ def kwinteger_fsm(string_input, index):
             inputstate = 1
         elif string_input[i] == 'T':
             inputstate = 2
-        elif string_input[i] == 'E':
-            inputstate = 3
-        elif string_input[i] == 'G':
-            inputstate = 4
-        elif string_input[i] == 'E':
-            inputstate = 5
-        elif string_input[i] == 'R':
-            inputstate = 6
         else:
-            inputstate = 7
+            inputstate = 3
 
         state = table[state][inputstate]
 
-        if state == 8:
+        if state == 4:
             break
 
         i += 1
