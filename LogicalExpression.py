@@ -1,10 +1,12 @@
 import Tokens
+import StatusTypes
 
 
 class LogicalExpression:
 
     def __init__(self):
         self.value = 0
+        self.status = StatusTypes.STATUS_OK
         self. precedence = {
             "~": 3,
             "||": 3,
@@ -29,9 +31,16 @@ class LogicalExpression:
         ]
 
     def evaluate(self, token_stream, varmap={}):
-        stack = self.infixToPostfix(token_stream, varmap)
+        try:
+            stack = self.infixToPostfix(token_stream, varmap)
 
-        return self.calculate(stack)
+            return self.calculate(stack)
+        except IndexError:
+            self.status = StatusTypes.STATUS_MISSING_OPEN_PAR
+            return False
+        except TypeError:
+            self.status = StatusTypes.STATUS_MISSING_CLOSE_PAR
+            return False
 
     def token_to_value(self, tokenized_value):
         return tokenized_value == 'TRUE'
@@ -70,6 +79,8 @@ class LogicalExpression:
         while opStack:
             postfixList.append(opStack.pop())
 
+        if '(' in postfixList:
+            raise TypeError
         return postfixList
 
     def calculate(self, stack):
