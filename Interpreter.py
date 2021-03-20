@@ -49,8 +49,6 @@ def interpret(lines, custom_input):
 
         token_stream = lexer.lexicalize(line)
         stmt_type = parser.parse_tokens(token_stream)
-        print(token_stream)
-        print(stmt_type)
         if parser.status != StatusTypes.STATUS_OK:
             return f'At line {line_number}: {parser.status}'
 
