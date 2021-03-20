@@ -49,6 +49,8 @@ def interpret(lines, custom_input):
 
         token_stream = lexer.lexicalize(line)
         stmt_type = parser.parse_tokens(token_stream)
+        print(token_stream)
+        print(stmt_type)
         if parser.status != StatusTypes.STATUS_OK:
             return f'At line {line_number}: {parser.status}'
 
@@ -124,9 +126,16 @@ def interpret(lines, custom_input):
                     if stmt_type in (Tokens.ST_ASSIGNMENT_STRICT_CHAR, Tokens.ST_ASSIGNMENT_STRICT_STRING):
                         variables[variable_name]['value'] = string_evaluator.evaluate(token_stream[2::], variables)
                     elif stmt_type in (Tokens.ST_ASSIGNMENT_STRICT_FLOAT, Tokens.ST_ASSIGNMENT_STRICT_INT):
-                        variables[variable_name]['value'] = math_evaluator.evaluate(token_stream[2::], variables)
+                        if stmt_type == Tokens.ST_ASSIGNMENT_STRICT_FLOAT:
+                            e_type = Tokens.FLOAT
+                        else:
+                            e_type = Tokens.INT
+                        variables[variable_name]['value'] = math_evaluator.evaluate(
+                            token_stream[2::], variables, e_type)
                     else:
                         variables[variable_name]['value'] = logic_evaluator.evaluate(token_stream[2::], variables)
+                else:
+                    return f'At line {line_number}: {semantics.status}'
 
             if stmt_type == Tokens.ST_OUTPUT:
                 if semantics.semantic_analyze(token_stream, stmt_type, variables):
