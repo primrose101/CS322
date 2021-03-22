@@ -107,6 +107,12 @@ class Lexer:
 
             match_string = statement[index:index+longest_match]
 
+            if token_type == Tokens.STRING:
+                if longest_match == 1 or not (match_string.startswith('"') and match_string.endswith('"')):
+                    token_stream.append([Tokens.ERROR, match_string])
+                    index += longest_match
+                    continue
+
             if token_type in ('LogicOp', 'Operator'):
                 token_type = self.op_dict[match_string]
 
@@ -116,7 +122,7 @@ class Lexer:
                 token_type = Tokens.FLOAT if token_type == Tokens.UNARY_FLOAT else Tokens.INT
 
             token_stream.append([token_type, match_string])
-            index += (longest_match)
+            index += longest_match
 
         # for key, value in match_dict.items():
         #    print(f'{key} : {value}')
