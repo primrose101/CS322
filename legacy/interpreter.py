@@ -1,5 +1,5 @@
 from parser import Parser
-from lexer import *
+from legacy.lexer import *
 
 
 class NodeVisitor:

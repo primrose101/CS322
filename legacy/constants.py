@@ -1,4 +1,4 @@
-from token import Token
+from legacy.token import Token
 
 
 INT_CONST = 'INT_CONST'

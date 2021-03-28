@@ -1,7 +1,7 @@
 
-from lexer import Lexer
-from parser import Parser
-from interpreter import Interpreter
+from legacy.lexer import Lexer
+from legacy.parser import Parser
+from legacy.interpreter import Interpreter
 
 
 def compile(program, inputs):

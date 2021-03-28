@@ -1,5 +1,5 @@
-from constants import *
-from token import Token
+from legacy.constants import *
+from legacy.token import Token
 
 
 class Lexer:

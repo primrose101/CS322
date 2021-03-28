@@ -1,5 +1,5 @@
-from constants import *
-from ast import *
+from legacy.constants import *
+from legacy.ast import *
 
 
 class Parser:
