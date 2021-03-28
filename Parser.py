@@ -1,270 +1,396 @@
-import Tokens
-import StatusTypes
+from constants import *
+from ast import *
 
 
-class Parser:
+class Parser(object):
+    def __init__(self, lexer):
+        self.lexer = lexer
+        # set current token to the first token taken from the input
+        self.current_token = self.lexer.get_next_token()
 
-    def __init__(self) -> None:
-        self.status = StatusTypes.STATUS_OK
-        self.error_type = None
-        self.error_value = None
-        self.longest_match = 0
+    def error(self):
+        line = str(self.lexer.line + 1)
+        if self.current_token.type == EOF:
+            line = str(self.lexer.line - 1)
+            #line = str(self.lexer.line)
+        msg = 'Invalid syntax on line ' + line + ': ' + self.lexer.text
+        raise Exception(msg)
 
-    def parse_tokens(self, token_stream):
+    def keep(self, token_type):
+        # compare the current token type with the passed token
+        # type and if they match then "keep" the current token
+        # and assign the next token to the self.current_token,
+        # otherwise raise an exception.
+        if self.current_token.type == token_type:
+            self.current_token = self.lexer.get_next_token()
+        else:
+            self.error()
 
-        if len(token_stream) == 1:
-            if token_stream[0][0] == Tokens.KW_START:
-                return Tokens.ST_START
-            elif token_stream[0][0] == Tokens.KW_STOP:
-                return Tokens.ST_STOP
+    def block(self):
+        """block : declarations compound_statement"""
+        declaration_nodes = self.declarations()
+        compound_statement_node = self.compound_statement()
+        node = Block(declaration_nodes, compound_statement_node)
+        return node
 
-        stmnt = self.assignmentTree(token_stream)
+    def declarations(self):
+        """declarations : VAR (variable_declaration)+
+                        | empty
+        """
+        declarations = []
+        """
+        if self.current_token.type == VAR:
+            self.keep(VAR)
+            while self.current_token.type == ID:
+                var_decl = self.variable_declaration()
+                declarations.extend(var_decl)
+                self.keep(SEMI)
+        """
 
-        if stmnt == Tokens.ERROR:
-            stmnt = self.outfut(token_stream)
+        while self.current_token.type == VAR:
+            self.keep(VAR)
+            if self.current_token.type == ID:
+                var_decl = self.variable_declaration()
+                declarations.extend(var_decl)
 
-        if stmnt == Tokens.ERROR:
-            stmnt = self.inpout(token_stream)
+        return declarations
 
-        if stmnt == Tokens.ERROR:
-            stmnt = self.declaration(token_stream)
+    def variable_declaration(self):
+        """variable_declaration : ID (COMMA ID [= default value])* AS type_spec"""
+        node = Var(self.current_token)
+        var_nodes = [node]  # first ID
+        self.keep(ID)
 
-        if stmnt == Tokens.ERROR:
-            self.status = StatusTypes.STATUS_UNIDENTIFIED_TOKEN
-        return stmnt
+        if self.current_token.type == ASSIGN:
+            self.keep(ASSIGN)
+            node.default_value = self.expr()
 
-    def assignmentTree(self, token_stream):
-        assZZ = self.string_assignment(token_stream)
+        while self.current_token.type == COMMA:
+            self.keep(COMMA)
+            node = Var(self.current_token)
+            var_nodes.append(node)
+            self.keep(ID)
 
-        if assZZ == Tokens.ERROR:
-            assZZ = self.math_assignment(token_stream)
+            if self.current_token.type == ASSIGN:
+                self.keep(ASSIGN)
+                node.default_value = self.expr()
 
-        if assZZ == Tokens.ERROR:
-            assZZ = self.logic_assignment(token_stream)
+        self.keep(AS)
 
-        return assZZ
+        type_node = self.type_spec()
+        var_declarations = [
+            VarDecl(var_node, type_node)
+            for var_node in var_nodes
+        ]
+        return var_declarations
 
-    def string_assignment(self, token_stream):
-        stateTable = [[1, 4, 4, 4],
-                      [4, 2, 4, 4],
-                      [3, 4, 3, 4],
-                      [4, 4, 4, 2],
-                      [4, 4, 4, 4]]
-        state = 0
-        infut = 0
+    def type_spec(self):
+        """type_spec : INT
+                     | FLOAT
+                     | CHAR
+                     | BOOL
+        """
+        token = self.current_token
+        if self.current_token.type == INT:
+            self.keep(INT)
+        elif self.current_token.type == CHAR:
+            self.keep(CHAR)
+        elif self.current_token.type == BOOL:
+            self.keep(BOOL)
+        else:
+            self.keep(FLOAT)
+        node = Type(token)
+        return node
 
-        for token in token_stream:
-            if token[0] == Tokens.IDENTIFIER:
-                infut = 0
-            elif token[0] == Tokens.EQUALS:
-                infut = 1
-            elif token[0] == Tokens.STRING:
-                infut = 2
-            elif token[0] == Tokens.CHAR:
-                infut = 2
-            elif token[0] == Tokens.CONCATENATOR:
-                infut = 3
+    def compound_statement(self):
+        """
+        compound_statement: START statement_list STOP
+        """
+        self.keep(START)
+        nodes = self.statement_list()
+        self.keep(STOP)
 
-            state = stateTable[state][infut]
-            if state == 4:
+        root = Compound()
+        for node in nodes:
+            root.children.append(node)
+
+        return root
+
+    def statement_list(self):
+        """
+        statement_list : statement
+                       | statement statement_list
+        """
+        node = self.statement()
+
+        results = [node]
+        while self.current_token.type != STOP:
+            # self.keep(self.current_token.type) # YAHOOO this is the culprit
+            if self.current_token.type == EOF:
+                break
+            statement = self.statement()
+            results.append(statement)
+            if type(statement).__name__ == 'NoOp':
+                break
+        return results
+
+    def statement(self):
+        """
+        statement : compound_statement
+                  | assignment_statement
+                  | empty
+        """
+        if self.current_token.type == START:
+            node = self.compound_statement()
+        elif self.current_token.type == ID:
+            node = self.assignment_statement()
+        elif self.current_token.type == OUTPUT:
+            self.keep(OUTPUT)
+            self.keep(COLON)
+            self.current_token.value = self.output_statement()
+            node = Output(self.current_token)
+        elif self.current_token.type == INPUT:
+            self.keep(INPUT)
+            self.keep(COLON)
+            self.current_token.value = self.input_statement()
+            node = Input(self.current_token)
+        elif self.current_token.type == IF:
+            current_token = self.current_token
+            self.keep(IF)
+            self.keep(LEFT_PAREN)
+            expression = self.expr()
+            self.keep(RIGHT_PAREN)
+            current_token.value = self.compound_statement()
+            els = None
+            if self.current_token.type == ELSE:
+                self.keep(ELSE)
+                els = self.compound_statement()
+            node = IfStatement(current_token, expression, els)
+        elif self.current_token.type == WHILE:
+            current_token = self.current_token
+            self.keep(WHILE)
+            self.keep(LEFT_PAREN)
+            expression = self.expr()
+            self.keep(RIGHT_PAREN)
+            current_token.value = self.compound_statement()
+            node = WhileStatement(current_token, expression)
+        else:
+            node = self.empty()
+        return node
+
+    def input_statement(self):
+        """
+        input_statement: INPUT: (variable)*
+        """
+        node = Var(self.current_token)
+        var_nodes = [node]  # first ID
+        self.keep(ID)
+        while self.current_token.type == COMMA:
+            self.keep(COMMA)
+            node = Var(self.current_token)
+            var_nodes.append(node)
+            self.keep(ID)
+            if self.current_token.type == STOP or self.current_token.type == EOF:
                 break
 
-        if state == 3:
-            return Tokens.ST_ASSIGNMENT_STRING
-        else:
-            return Tokens.ERROR
+        return var_nodes
 
-    def math_assignment(self, token_stream):
-        stateTable = [[1, 4, 4, 4, 4, 4],
-                      [4, 2, 4, 4, 4, 4],
-                      [3, 4, 3, 4, 2, 4],
-                      [4, 4, 4, 2, 4, 3],
-                      [4, 4, 4, 4, 4, 4]]
-        state = 0
-        infut = 0
-
-        for token in token_stream:
-            if token[0] == Tokens.IDENTIFIER:
-                infut = 0
-            elif token[0] == Tokens.EQUALS:
-                infut = 1
-            elif token[0] == Tokens.INT:
-                infut = 2
-            elif token[0] == Tokens.FLOAT:
-                infut = 2
-            elif token[0] == Tokens.MULTIPLY:
-                infut = 3
-            elif token[0] == Tokens.DIVIDE:
-                infut = 3
-            elif token[0] == Tokens.PLUS:
-                infut = 3
-            elif token[0] == Tokens.MINUS:
-                infut = 3
-            elif token[0] == Tokens.MODULO:
-                infut = 3
-            elif token[0] == Tokens.PAREN_OPEN:
-                infut = 4
-            elif token[0] == Tokens.PAREN_CLOSE:
-                infut = 5
-
-            state = stateTable[state][infut]
-            if state == 4:
+    def output_statement(self):
+        """
+        output_statement : expr (& expr)*
+        """
+        terms = []
+        current_pos = self.lexer.pos
+        while True:
+            if self.current_token.type == STRING_CONST:
+                terms.append(self.expr())
+            elif self.current_token.type == ID:
+                terms.append(self.variable())
+            if self.lexer.pos < current_pos or self.current_token.type != AMPERSAND:
                 break
+            if self.current_token.type == AMPERSAND:
+                self.keep(AMPERSAND)
+        return terms
 
-        if state == 3:
-            return Tokens.ST_ASSIGNMENT_MATH
-        else:
-            return Tokens.ERROR
-
-    def logic_assignment(self, token_stream):
-        stateTable = [[1, 4, 4, 4, 4, 4],
-                      [4, 2, 4, 4, 4, 4],
-                      [3, 4, 3, 4, 2, 4],
-                      [4, 4, 4, 2, 4, 3],
-                      [4, 4, 4, 4, 4, 4]]
-        state = 0
-        infut = 0
-
-        for token in token_stream:
-            if token[0] == Tokens.IDENTIFIER:
-                infut = 0
-            elif token[0] == Tokens.EQUALS:
-                infut = 1
-            elif token[0] == Tokens.BOOL_TRUE:
-                infut = 2
-            elif token[0] == Tokens.BOOL_FALSE:
-                infut = 2
-            elif token[0] == Tokens.INT:
-                infut = 2
-            elif token[0] == Tokens.FLOAT:
-                infut = 2
-            elif token[0] in (Tokens.CHAR, Tokens.STRING):
-                infut = 2
-            elif token[0] == Tokens.AND:
-                infut = 3
-            elif token[0] == Tokens.OR:
-                infut = 3
-            elif token[0] == Tokens.GREATER_OR_EQUAL:
-                infut = 3
-            elif token[0] == Tokens.GREATER_THAN:
-                infut = 3
-            elif token[0] == Tokens.LESS_OR_EQUAL:
-                infut = 3
-            elif token[0] == Tokens.LESS_THAN:
-                infut = 3
-            elif token[0] == Tokens.LOGIC_EQUAL:
-                infut = 3
-            elif token[0] == Tokens.NOT_EQUAL:
-                infut = 3
-            elif token[0] == Tokens.PAREN_OPEN:
-                infut = 4
-            elif token[0] == Tokens.PAREN_CLOSE:
-                infut = 5
-
-            state = stateTable[state][infut]
-
-            if state == 4:
+    def if_statement(self):
+        """
+        output_statement : expr (& expr)*
+        """
+        terms = []
+        current_pos = self.lexer.pos
+        while True:
+            if self.current_token.type == STRING_CONST:
+                terms.append(self.expr())
+            elif self.current_token.type == ID:
+                terms.append(self.variable())
+            if self.lexer.pos < current_pos or self.current_token.type != AMPERSAND:
                 break
+            if self.current_token.type == AMPERSAND:
+                self.keep(AMPERSAND)
+        return terms
 
-        if state == 3:
-            return Tokens.ST_ASSIGNMENT_LOGIC
+    def assignment_statement(self):
+        """
+        assignment_statement : variable ASSIGN expr
+        """
+
+        left = self.variable()
+        token = self.current_token
+        self.keep(ASSIGN)
+        right = self.expr()
+        node = Assign(left, token, right)
+        return node
+
+    def variable(self):
+        """
+        variable : ID
+        """
+        node = Var(self.current_token)
+        self.keep(ID)
+        return node
+
+    def empty(self):
+        """An empty production"""
+        return NoOp()
+
+    def expr(self):
+        """
+        expr : term ((PLUS | MINUS | ASSIGN | GREATER_THAN | LESSER_THAN | GREATER_EQUAL | LESSER_EQUAL | EQUAL | NOT_EQUAL) term)*
+        """
+        node = self.term()
+
+        while self.current_token.type in (PLUS, MINUS, ASSIGN, GREATER_THAN, LESSER_THAN, GREATER_EQUAL, LESSER_EQUAL, EQUAL, NOT_EQUAL):
+            token = self.current_token
+            if token.type == PLUS:
+                self.keep(PLUS)
+            elif token.type == MINUS:
+                self.keep(MINUS)
+            elif token.type == ASSIGN:
+                self.keep(ASSIGN)
+            elif token.type == GREATER_THAN:
+                self.keep(GREATER_THAN)
+            elif token.type == LESSER_THAN:
+                self.keep(LESSER_THAN)
+            elif token.type == GREATER_EQUAL:
+                self.keep(GREATER_EQUAL)
+            elif token.type == LESSER_EQUAL:
+                self.keep(LESSER_EQUAL)
+            elif token.type == EQUAL:
+                self.keep(EQUAL)
+            elif token.type == NOT_EQUAL:
+                self.keep(NOT_EQUAL)
+
+            node = BinOp(left=node, op=token, right=self.term())
+
+        return node
+
+    def term(self):
+        """term : factor ((MUL | MOD | DIV | AND | OR | NOT) factor)*"""
+        node = self.factor()
+
+        while self.current_token.type in (MUL, MOD, DIV, AND, OR, NOT):
+            token = self.current_token
+            if token.type == MUL:
+                self.keep(MUL)
+            elif token.type == MOD:
+                self.keep(MOD)
+            elif token.type == DIV:
+                self.keep(DIV)
+            elif token.type == AND:
+                self.keep(AND)
+            elif token.type == OR:
+                self.keep(OR)
+            elif token.type == NOT:
+                self.keep(NOT)
+
+            node = BinOp(left=node, op=token, right=self.factor())
+
+        return node
+
+    def factor(self):
+        """factor : PLUS factor
+                  | MINUS factor
+                  | INT_CONST
+                  | FLOAT_CONST
+                  | LEFT_PAREN expr RIGHT_PAREN
+                  | SINGLE_QOUTE expr SINGLE_QOUTE
+                  | DOUBLE_QOUTE expr DOUBLE_QOUTE
+                  | variable
+        """
+        token = self.current_token
+        if token.type == PLUS:
+            self.keep(PLUS)
+            node = UnaryOp(token, self.factor())
+            return node
+        elif token.type == MINUS:
+            self.keep(MINUS)
+            node = UnaryOp(token, self.factor())
+            return node
+        elif token.type == INT_CONST:
+            self.keep(INT_CONST)
+            return Num(token)
+        elif token.type == FLOAT_CONST:
+            self.keep(FLOAT_CONST)
+            return Num(token)
+        elif token.type == LEFT_PAREN:
+            self.keep(LEFT_PAREN)
+            node = self.expr()
+            self.keep(RIGHT_PAREN)
+            return node
+        elif token.type == CHAR_CONST:
+            self.keep(CHAR_CONST)
+            return Char(token)
+        elif token.type == STRING_CONST:
+            self.keep(STRING_CONST)
+            return String(token)
+        elif token.type == BOOL_CONST:
+            self.keep(BOOL_CONST)
+            return Bool(token)
         else:
-            return Tokens.ERROR
+            return self.variable()
 
-    def outfut(self, token_stream):
-        stateTable = [[1, 4, 4, 4, 4],
-                      [4, 2, 4, 4, 4],
-                      [4, 4, 3, 4, 3],
-                      [4, 4, 4, 2, 4],
-                      [4, 4, 4, 4, 4]]
-        state = 0
-        infut = 0
+    def parse(self):
+        """
+        block : declarations compound_statement
 
-        for token in token_stream:
-            if token[0] == Tokens.KW_OUTPUT:
-                infut = 0
-            elif token[0] == Tokens.COLON:
-                infut = 1
-            elif token[0] == Tokens.IDENTIFIER:
-                infut = 2
-            elif token[0] in (Tokens.STRING, Tokens.CHAR):
-                infut = 2
-            elif token[0] == Tokens.CONCATENATOR:
-                infut = 3
-            else:
-                infut = 4
+        declarations : VAR (variable_declaration)+
+                     | empty
 
-            state = stateTable[state][infut]
-            if state == 4:
-                break
+        variable_declaration : ID (COMMA ID [= default value])* AS type_spec
 
-        if state == 3:
-            return Tokens.ST_OUTPUT
-        else:
-            return Tokens.ERROR
+        type_spec : INT | CHAR | FLOAT | BOOL
 
-    def inpout(self, token_stream):
-        stateTable = [[1, 4, 4, 4],
-                      [4, 2, 4, 4],
-                      [4, 4, 3, 4],
-                      [4, 4, 4, 2],
-                      [4, 4, 4, 4]]
-        state = 0
-        infut = 0
+        compound_statement : START statement_list STOP
 
-        for token in token_stream:
-            if token[0] == Tokens.KW_INPUT:
-                infut = 0
-            elif token[0] == Tokens.COLON:
-                infut = 1
-            elif token[0] == Tokens.IDENTIFIER:
-                infut = 2
-            elif token[0] == Tokens.COMMA:
-                infut = 3
+        statement_list : statement
+                       | statement statement_list
 
-            state = stateTable[state][infut]
-            if state == 4:
-                break
+        statement : compound_statement
+                  | assignment_statement
+                  | empty
 
-        if state == 3:
-            return Tokens.ST_INPUT
-        else:
-            return Tokens.ERROR
+        assignment_statement : variable ASSIGN expr
 
-    def declaration(self, token_stream):
-        stateTable = [[1, 7, 7, 7, 7, 7, 7],
-                      [7, 2, 7, 7, 7, 7, 7],
-                      [7, 7, 1, 5, 7, 3, 7],
-                      [7, 7, 7, 7, 7, 7, 4],
-                      [7, 7, 7, 7, 7, 7, 7],
-                      [7, 7, 7, 7, 6, 7, 7],
-                      [7, 7, 1, 7, 7, 3, 7],
-                      [7, 7, 7, 7, 7, 7, 7]]
-        state = 0
-        infut = 0
+        empty :
 
-        for token in token_stream:
-            if token[0] == Tokens.KW_VAR:
-                infut = 0
-            elif token[0] == Tokens.IDENTIFIER:
-                infut = 1
-            elif token[0] == Tokens.COMMA:
-                infut = 2
-            elif token[0] == Tokens.EQUALS:
-                infut = 3
-            elif token[0] in (Tokens.INT, Tokens.FLOAT, Tokens.STRING, Tokens.CHAR, Tokens.BOOL_TRUE, Tokens.BOOL_FALSE):
-                infut = 4
-            elif token[0] == Tokens.KW_AS:
-                infut = 5
-            elif token[0] in (Tokens.KW_INT, Tokens.KW_FLOAT, Tokens.KW_STRING, Tokens.KW_CHAR, Tokens.KW_BOOLEAN):
-                infut = 6
+        expr : term ((PLUS | MINUS | ASSIGN | GREATER_THAN | LESSER_THAN | GREATER_EQUAL | LESSER_EQUAL | EQUAL | NOT_EQUAL) term)*
 
-            state = stateTable[state][infut]
+        term : factor ((MUL | MOD | DIV | AND | OR | NOT) factor)*
 
-            if state == 7:
-                break
+        factor : PLUS factor
+               | MINUS factor
+               | INT_CONST
+               | FLOAT_CONST
+               | LEFT_PAREN expr RIGHT_PAREN
+               | variable
 
-        if state == 4:
-            return Tokens.ST_DECLARATION
-        else:
-            return Tokens.ERROR
+        variable: ID
+        """
+
+        block_node = self.block()
+        node = Program(block_node)
+
+        if self.current_token.type != EOF:
+            self.error()
+
+        return node

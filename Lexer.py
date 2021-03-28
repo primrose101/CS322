@@ -1,136 +1,263 @@
-from re import match
-from finite_state_machines import data_types, identifier, logical_operator, operator, keywords
-import Tokens
+from constants import *
+from token import Token
 
 
-class Lexer:
+class Lexer(object):
 
-    op_dict = {
-        '+': Tokens.PLUS,
-        '-': Tokens.MINUS,
-        '*': Tokens.MULTIPLY,
-        '/': Tokens.DIVIDE,
-        '%': Tokens.MODULO,
-        '&': Tokens.CONCATENATOR,
-        '(': Tokens.PAREN_OPEN,
-        ')': Tokens.PAREN_CLOSE,
-        '>': Tokens.GREATER_THAN,
-        '<': Tokens.LESS_THAN,
-        '>=': Tokens.GREATER_OR_EQUAL,
-        '<=': Tokens.LESS_OR_EQUAL,
-        '=': Tokens.EQUALS,
-        '==': Tokens.LOGIC_EQUAL,
-        '<>': Tokens.NOT_EQUAL,
-        '&&': Tokens.AND,
-        '||': Tokens.OR,
-    }
+    def __init__(self, text):
+        self.lines = text.split("\n")
+        if len(self.lines) == 0:
+            self.error()
+        self.line = -1
+        self.next_line()
 
-    def lexicalize(self, statement):
+    def process_text(self, text):
+        lines = text.split("\n")
+        new_lines = []
+        for line in lines:
+            clean_line = line.strip()
+            if clean_line and clean_line[0] == '*':  # ignore comment
+                continue
+            new_lines.append(line)
+        return "\n".join(new_lines)
 
-        token_stream = list()
-        index = 0
-        stmt_length = len(statement)
+    def next_line(self):
+        self.line += 1
+        if self.line < len(self.lines):
+            line = self.lines[self.line].strip()
+            if len(line) == 0 or line[0] == '*':  # comment
+                return self.next_line()
+            else:
+                self.pos = 0
+                self.text = ' ' + self.lines[self.line]  # MUST add space before or after
+                self.current_char = self.text[self.pos]
+        else:
+            self.current_char = None
 
-        while index < stmt_length:
+    def next_char(self):
+        """Advance the `pos` pointer and set the `current_char` variable."""
+        self.pos += 1
+        if self.pos < len(self.text):
+            self.current_char = self.text[self.pos]
+        else:
+            self.next_line()
 
-            if statement[index] == ' ':
-                index += 1
+    def error(self):
+        raise Exception('Invalid character ' + self.current_char)
+
+    def peek(self, step=1):
+        peek_pos = self.pos + step
+        if peek_pos > len(self.text) - 1:
+            return None
+        else:
+            return self.text[peek_pos]
+
+    def look_back(self, step=1):
+        back_pos = self.pos - step
+        if back_pos > len(self.text) - 1:
+            return None
+        else:
+            return self.text[back_pos]
+
+    def skip_whitespace(self):
+        while self.current_char is not None and self.current_char.isspace():
+            self.next_char()
+
+    def skip_comment(self):
+        while self.current_char != '}':
+            self.next_char()
+        self.next_char()  # the closing curly brace
+
+    def number(self):
+        """Return a (multidigit) integer or float consumed from the input."""
+        result = ''
+        while self.current_char is not None and self.current_char.isdigit():
+            result += self.current_char
+            self.next_char()
+
+        if self.current_char == '.':
+            result += self.current_char
+            self.next_char()
+
+            while (
+                self.current_char is not None and
+                self.current_char.isdigit()
+            ):
+                result += self.current_char
+                self.next_char()
+
+            token = Token('FLOAT_CONST', float(result))
+        else:
+            token = Token('INT_CONST', int(result))
+
+        return token
+
+    def char(self):
+        if self.current_char == '\'':
+            char = ''
+        else:
+            char = self.current_char  # this is char
+            self.next_char()  # move to close single quote
+        self.next_char()  # move to next character
+        return Token('CHAR_CONST', char)
+
+    def string(self):
+        result = ''
+        while self.current_char is not None:
+            if self.current_char == '[' and self.peek(2) == ']':  # first
+                self.next_char()
+                continue
+            if self.look_back() == '[' and self.peek() == ']':  # middle
+                result += self.current_char
+                self.next_char()
+                continue
+            if self.current_char == ']' and self.look_back(2) == '[':  # last
+                self.next_char()
+                continue
+            if self.current_char == '"':
+                self.next_char()
+                break
+            result += self.current_char if self.current_char != '#' else "\n"
+            self.next_char()
+        if result in ['TRUE', 'FALSE']:
+            return Token('BOOL_CONST', result)
+        return Token('STRING_CONST', result)
+
+    def _id(self):
+        """Handle identifiers and reserved keywords"""
+        result = ''
+        while self.current_char is not None and (self.current_char.isalnum() or self.current_char == '_'):
+            result += self.current_char
+            self.next_char()
+
+        token = RESERVED_KEYWORDS.get(result, Token(ID, result))
+        return token
+
+    def get_next_token(self):
+        """Lexical analyzer (also known as scanner or tokenizer)
+
+        This method is responsible for breaking a sentence
+        apart into tokens. One token at a time.
+        """
+
+        while self.current_char is not None:
+
+            if self.current_char.isspace():
+                self.skip_whitespace()
                 continue
 
-            match_dict = dict()
-
-            # keyword match counts
-            start_count = keywords.kwstart_fsm(statement, index)
-            match_dict[Tokens.KW_START] = start_count
-            stop_count = keywords.kwstop_fsm(statement, index)
-            match_dict[Tokens.KW_STOP] = stop_count
-            var_count = keywords.kwvar_fsm(statement, index)
-            match_dict[Tokens.KW_VAR] = var_count
-            as_count = keywords.kwas_fsm(statement, index)
-            match_dict[Tokens.KW_AS] = as_count
-            kw_int_count = keywords.kwinteger_fsm(statement, index)
-            match_dict[Tokens.KW_INT] = kw_int_count
-            kw_float_count = keywords.kwfloat_fsm(statement, index)
-            match_dict[Tokens.KW_FLOAT] = kw_float_count
-            kw_str_count = keywords.kwstring_fsm(statement, index)
-            match_dict[Tokens.KW_STRING] = kw_str_count
-            kw_bool_count = keywords.kwboolean_fsm(statement, index)
-            match_dict[Tokens.KW_BOOLEAN] = kw_bool_count
-            kw_output_count = keywords.kwoutput_fsm(statement, index)
-            match_dict[Tokens.KW_OUTPUT] = kw_output_count
-            kw_input_count = keywords.kwinput_fsm(statement, index)
-            match_dict[Tokens.KW_INPUT] = kw_input_count
-            kw_char_count = keywords.kwchar_fsm(statement, index)
-            match_dict[Tokens.KW_CHAR] = kw_char_count
-            comma_count = keywords.kwcomma_fsm(statement, index)
-            match_dict[Tokens.COMMA] = comma_count
-            colon_count = keywords.kwcolon_fsm(statement, index)
-            match_dict[Tokens.COLON] = colon_count
-
-            # operator
-            operator_count = operator.operator_fsm(statement, index)  # includes concat(&) operator
-            match_dict['Operator'] = operator_count
-            logic_op_count = logical_operator.logicalop_fsm(statement, index)
-            match_dict['LogicOp'] = logic_op_count
-
-            # data types match counts
-            int_count = data_types.int_lexer(statement, index)
-            match_dict[Tokens.INT] = int_count
-            float_count = data_types.float_lexer(statement, index)
-            match_dict[Tokens.FLOAT] = float_count
-            unary_int_count = data_types.intUnary_lexer(statement, index)
-            match_dict[Tokens.UNARY_INT] = unary_int_count
-            unary_float_count = data_types.floatUnary_lexer(statement, index)
-            match_dict[Tokens.UNARY_FLOAT] = unary_float_count
-            char_count = data_types.char_lexer(statement, index)
-            match_dict[Tokens.CHAR] = char_count
-            string_count = data_types.string_lexer(statement, index)
-            match_dict[Tokens.STRING] = string_count
-            true_bool_count = data_types.true_bool_lexer(statement, index)
-            match_dict[Tokens.BOOL_TRUE] = true_bool_count
-            false_bool_count = data_types.false_bool_lexer(statement, index)
-            match_dict[Tokens.BOOL_FALSE] = false_bool_count
-
-            # identifier
-            iden_count = identifier.iden_fsm(statement, index)
-            match_dict[Tokens.IDENTIFIER] = iden_count
-
-            longest_match = max(match_dict.values())
-
-            if longest_match == 0:
-                # if lexer sees an unidentified character
-                token_stream.append([Tokens.ERROR, statement[index]])
-                index += 1
+            if self.current_char == '{':
+                self.next_char()
+                self.skip_comment()
                 continue
 
-            token_type = self.get_key(match_dict, longest_match)
+            if self.current_char == 'A' and self.peek() == 'S':
+                self.next_char()
+                self.next_char()
+                return Token(AS, 'AS')
 
-            match_string = statement[index:index+longest_match]
+            if self.current_char.isalpha() or self.current_char == '_':
+                return self._id()
 
-            if token_type == Tokens.STRING:
-                if longest_match == 1 or not (match_string.startswith('"') and match_string.endswith('"')):
-                    token_stream.append([Tokens.ERROR, match_string])
-                    index += longest_match
-                    continue
+            if self.current_char.isdigit():
+                return self.number()
 
-            if token_type in ('LogicOp', 'Operator'):
-                token_type = self.op_dict[match_string]
+            if self.current_char == '=' and self.peek() == '=':
+                self.next_char()
+                self.next_char()
+                return Token(EQUAL, '==')
 
-            if token_type in (Tokens.UNARY_FLOAT, Tokens.UNARY_INT):
-                if token_stream and token_stream[-1][0] in (Tokens.IDENTIFIER, Tokens.INT, Tokens.FLOAT):
-                    token_stream.append([Tokens.PLUS, '+'])
-                token_type = Tokens.FLOAT if token_type == Tokens.UNARY_FLOAT else Tokens.INT
+            if self.current_char == '=':
+                self.next_char()
+                return Token(ASSIGN, '=')
 
-            token_stream.append([token_type, match_string])
-            index += longest_match
+            if self.current_char == ';':
+                self.next_char()
+                return Token(SEMI, ';')
 
-        # for key, value in match_dict.items():
-        #    print(f'{key} : {value}')
+            if self.current_char == ':':
+                self.next_char()
+                return Token(COLON, ':')
 
-        return token_stream
+            if self.current_char == ',':
+                self.next_char()
+                return Token(COMMA, ',')
 
-    def get_key(self, my_dict, value):
-        for key, count in my_dict.items():
-            if value == count:
-                return key
-        return 'key doesn\'t exist.'
+            if self.current_char == '+':
+                self.next_char()
+                return Token(PLUS, '+')
+
+            if self.current_char == '-':
+                self.next_char()
+                return Token(MINUS, '-')
+
+            if self.current_char == '*':
+                self.next_char()
+                return Token(MUL, '*')
+
+            if self.current_char == '%':
+                self.next_char()
+                return Token(MOD, '%')
+
+            if self.current_char == '/':
+                self.next_char()
+                return Token(DIV, '/')
+
+            if self.current_char == '(':
+                self.next_char()
+                return Token(LEFT_PAREN, '(')
+
+            if self.current_char == ')':
+                self.next_char()
+                return Token(RIGHT_PAREN, ')')
+
+            if self.current_char == '[':
+                self.next_char()
+                return Token(LEFT_BRACE, '[')
+
+            if self.current_char == ']':
+                self.next_char()
+                return Token(RIGHT_BRACE, ']')
+
+            if self.current_char == '.':
+                self.next_char()
+                return Token(DOT, '.')
+
+            if self.current_char == '&':
+                self.next_char()
+                return Token(AMPERSAND, '&')
+
+            if self.current_char == '>' and self.peek() == '=':
+                self.next_char()
+                self.next_char()
+                return Token(GREATER_EQUAL, '>=')
+
+            if self.current_char == '>':
+                self.next_char()
+                return Token(GREATER_THAN, '>')
+
+            if self.current_char == '<' and self.peek() == '>':
+                self.next_char()
+                self.next_char()
+                return Token(NOT_EQUAL, '<>')
+
+            if self.current_char == '<' and self.peek() == '=':
+                self.next_char()
+                self.next_char()
+                return Token(LESSER_EQUAL, '<=')
+
+            if self.current_char == '<':
+                self.next_char()
+                return Token(LESSER_THAN, '<')
+
+            if self.current_char == '\'':
+                self.next_char()
+                return self.char()
+
+            if self.current_char == '"':
+                self.next_char()
+                return self.string()
+
+            self.error()
+
+        return Token(EOF, None)

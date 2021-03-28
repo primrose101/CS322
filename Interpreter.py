@@ -1,163 +1,293 @@
-
-from InputHandler import InputHandler
-from SemanticAnalyzer import SemanticAnalyzer
-from LogicalExpression import LogicalExpression
-from StringExpression import StringExpression
-from MathExpression import MathExpression
-from DeclarationHandler import DeclarationHandler
-from Parser import Parser
-from Lexer import Lexer
-import StatusTypes
-import Tokens
+from parser import *
+from lexer import *
 
 
-def interpret(lines, custom_input):
+class NodeVisitor(object):
+    def visit(self, node):
+        method_name = f'visit_{type(node).__name__}'
+        visitor = getattr(self, method_name, self.generic_visit)
+        return visitor(node)
 
-    inputs = [line for line in custom_input.split('\n')]
+    def generic_visit(self, node):
+        raise Exception(f'No visit_{type(node).__name__} method')
 
-    for i in range(5):
-        inputs.append(str())
 
-    input_index = 0
-    completion_status = StatusTypes.STATUS_MISSING_START
+class Interpreter(NodeVisitor):
+    def __init__(self, parser, inputs):
+        self.parser = parser
+        self.inputs = inputs
+        self.output = str()
+        import collections
+        self.GLOBAL_SCOPE = collections.OrderedDict()
+        self.DECLARED_VAR = dict()
 
-    output = str()
-    variables = {}
+    def visit_Program(self, node):
+        self.visit(node.block)
 
-    # Functions to use in compiling
-    lexer = Lexer()
-    parser = Parser()
-    dec_handler = DeclarationHandler()
-    input_handler = InputHandler()
-    math_evaluator = MathExpression()
-    string_evaluator = StringExpression()
-    logic_evaluator = LogicalExpression()
-    semantics = SemanticAnalyzer()
+    def visit_Block(self, node):
+        for declaration in node.declarations:
+            self.visit(declaration)
+        self.visit(node.compound_statement)
 
-    # values for state table
-    state = 0
-    infut = 0
-
-    state_table = [
-        (0, 1, 3, 3),
-        (3, 3, 1, 2),
-        (3, 3, 3, 3)
-    ]
-
-    for line_number, line in enumerate(lines.split('\n'), 1):
-
-        is_valid = True
-
-        if not line.strip() or line.startswith('*'):  # comment algorithm
-            continue
-
-        token_stream = lexer.lexicalize(line)
-        stmt_type = parser.parse_tokens(token_stream)
-        if parser.status != StatusTypes.STATUS_OK:
-            return f'At line {line_number}: {parser.status}'
-
-        if stmt_type == Tokens.ST_DECLARATION:
-            infut = 0
-            if semantics.semantic_analyze(token_stream, stmt_type, variables):
-                variables = dec_handler.handle_declaration(token_stream, variables)
-                if not dec_handler.status == StatusTypes.STATUS_OK:
-                    return f'At line {line_number}: {dec_handler.status}'
+    def assign_var_value(self, name, value):
+        if name in self.DECLARED_VAR:
+            if self.DECLARED_VAR[name] == INT:
+                if not isinstance(value, int):
+                    if isinstance(value, float):
+                        value = int(value)
+                    else:
+                        try:
+                            value = int(value)
+                        except ValueError:
+                            raise NameError(f'Value {repr(value)} could not assign to int variable {repr(name)}')
+            elif self.DECLARED_VAR[name] == FLOAT:
+                if not isinstance(value, float):
+                    if isinstance(value, int):
+                        value = float(value)
+                    else:
+                        try:
+                            value = float(value)
+                        except ValueError:
+                            raise NameError(f'Value {repr(value)} could not assign to float variable repr(name)')
+            elif self.DECLARED_VAR[name] == CHAR:
+                if not isinstance(value, str):
+                    raise NameError(f'Value {repr(value)} could not assign to char variable {repr(name)}')
+            elif self.DECLARED_VAR[name] == BOOL:
+                if value not in ['TRUE', 'FALSE']:
+                    if isinstance(value, bool):
+                        value = 'TRUE' if value else 'FALSE'
+                    else:
+                        raise NameError(f'Value {repr(value)} could not assign to boolean variable {repr(name)}')
             else:
-                return f'At line {line_number}: {semantics.status}'
+                raise NameError(f'Unknown data type f{self.DECLARED_VAR[name]}')
+            self.GLOBAL_SCOPE[name] = value
+        return value
 
-        elif stmt_type == Tokens.ST_START:
-            infut = 1
-            completion_status = StatusTypes.STATUS_MISSING_STOP
+    def visit_VarDecl(self, node):
+        if node.var_node.value in self.DECLARED_VAR:
+            raise NameError(f'{repr(node.var_node.value)} variable already defined')
+        if node.var_node.default_value == None:
+            if node.type_node.value == INT:
+                default_value = 0
+            elif node.type_node.value == FLOAT:
+                default_value = 0
+            elif node.type_node.value == CHAR:
+                default_value = ''
+            elif node.type_node.value == BOOL:
+                default_value = 'FALSE'
+            else:
+                default_value = node.var_node.default_value
+        else:
+            default_value = node.var_node.default_value.value
+        self.DECLARED_VAR[node.var_node.value] = node.type_node.value
+        self.assign_var_value(node.var_node.value, default_value)
 
-        elif stmt_type in (Tokens.ST_ASSIGNMENT_LOGIC, Tokens.ST_ASSIGNMENT_MATH, Tokens.ST_ASSIGNMENT_STRING, Tokens.ST_INPUT, Tokens.ST_OUTPUT):
-            infut = 2
-            if stmt_type == Tokens.ST_INPUT:
-                if semantics.semantic_analyze(token_stream, stmt_type, variables):
-                    variables = input_handler.assign_inputs(token_stream[2::2], inputs[input_index], variables)
-                    if not input_handler.status == StatusTypes.STATUS_OK:
-                        return f'At line {line_number}: {input_handler.status}'
-                    input_index += 1
+    def visit_BinOp(self, node):
+        if node.op.type == PLUS:
+            return self.visit(node.left) + self.visit(node.right)
+        elif node.op.type == MINUS:
+            return self.visit(node.left) - self.visit(node.right)
+        elif node.op.type == MUL:
+            return self.visit(node.left) * self.visit(node.right)
+        elif node.op.type == MOD:
+            return self.visit(node.left) % self.visit(node.right)
+        elif node.op.type == DIV:
+            return self.visit(node.left) / self.visit(node.right)
+        elif node.op.type == ASSIGN:
+            # LIMITATIONS: for multiple assignments, constant values must be enclosed in braces
+            value = self.visit(node.right)
+            if node.value is None:
+                node.value = value
+            # process all lefts
+            if type(node.left).__name__ == 'BinOp':
+                node.left.value = node.value
+                return self.visit(node.left)
+            if type(node.left).__name__ == 'Var' and node.left.value in self.GLOBAL_SCOPE:
+                self.assign_var_value(node.left.value, node.value)
+            if type(node.right).__name__ == 'Var' and node.right.value in self.GLOBAL_SCOPE:
+                self.assign_var_value(node.right.value, node.value)
+            return value
+        elif node.op.type == AND:
+            return self.visit(node.left) and self.visit(node.right)
+        elif node.op.type == OR:
+            return self.visit(node.left) or self.visit(node.right)
+        elif node.op.type == NOT:
+            return not self.visit(node.right)
+        elif node.op.type == GREATER_THAN:
+            return self.visit(node.left) > self.visit(node.right)
+        elif node.op.type == LESSER_THAN:
+            return self.visit(node.left) < self.visit(node.right)
+        elif node.op.type == GREATER_EQUAL:
+            return self.visit(node.left) >= self.visit(node.right)
+        elif node.op.type == LESSER_EQUAL:
+            return self.visit(node.left) <= self.visit(node.right)
+        elif node.op.type == EQUAL:
+            return self.visit(node.left) == self.visit(node.right)
+        elif node.op.type == NOT_EQUAL:
+            return bool(self.visit(node.left) != self.visit(node.right))
+
+    def visit_Num(self, node):
+        return node.value
+
+    def visit_Char(self, node):
+        return node.value
+
+    def visit_Bool(self, node):
+        return node.value
+
+    def visit_String(self, node):
+        return node.value
+
+    def visit_Input(self, node):
+        output = ''
+        data_types = []
+        for val in node.value:
+            data_types.append(self.DECLARED_VAR[val.value])
+
+        print(self.inputs)
+        values = self.inputs.split(',')
+        if len(values) != len(node.value):
+            raise NameError("Invalid inputs.")
+        i = 0
+        for val in node.value:
+            value = values[i]
+            data_type = self.DECLARED_VAR[val.value]
+            if data_type == INT:
+                try:
+                    value = int(value)
+                except ValueError:
+                    raise NameError(f'Invalid input {repr(value)}for int variable {repr(val.value)}')
+            elif data_type == FLOAT:
+                try:
+                    value = int(value)
+                except ValueError:
+                    raise NameError(f'Invalid input {repr(value)} for int variable {repr(val.value)}')
+            elif data_type == CHAR:
+                value = value[0] if len(value) > 0 else value
+            elif data_type == BOOL:
+                if type(value) is bool:
+                    value = 'TRUE' if value else 'FALSE'
+                value = str(value)
+                if value not in ['TRUE', 'FALSE']:
+                    value = 'FALSE'
+            else:
+                value = str(value)
+            self.assign_var_value(val.value, value)
+            i = i + 1
+        return node.value
+
+    def visit_Output(self, node):
+        output = ''
+        for val in node.value:
+            if type(val).__name__ == 'Var':
+                if val.value not in self.GLOBAL_SCOPE:
+                    raise NameError(f'{repr(val.value)} variable is not defined.')
+                val_name = val.value
+                val = self.GLOBAL_SCOPE[val_name]
+                data_type = self.DECLARED_VAR[val_name]
+                if data_type == INT:
+                    val = int(val)
+                elif data_type == FLOAT:
+                    val = float(val)
+                elif data_type == CHAR:
+                    val = val[0] if len(val) > 0 else val
+                elif data_type == BOOL:
+                    if type(val) is bool:
+                        val = 'TRUE' if val else 'FALSE'
+                    val = str(val)
+                    if val not in ['TRUE', 'FALSE']:
+                        val = 'FALSE'
                 else:
-                    return f'At line {line_number}: {semantics.status}'
+                    val = str(val)
+            else:
+                val = val.value
+            output += str(val)
+        self.output += output
+        return node.value
 
-            if stmt_type in (Tokens.ST_ASSIGNMENT_MATH, Tokens.ST_ASSIGNMENT_LOGIC, Tokens.ST_ASSIGNMENT_STRING):
+    def visit_IfStatement(self, node):
+        val_expr = self.visit(node.expr)
+        if val_expr and val_expr != 'FALSE':
+            values = [node.value]
+            if type(node.value).__name__ == 'list':
+                values = []
+                for val in node.value:
+                    values.append(val)
+            for val in values:
+                self.visit(val)
+        elif node.els is not None:
+            self.visit(node.els)
+        return node.value
 
-                variable_name = token_stream[0][1]
+    def visit_WhileStatement(self, node):
+        while True:
+            val_expr = self.visit(node.expr)
+            if not val_expr or val_expr == 'FALSE':
+                break
+            values = [node.value]
+            if type(node.value).__name__ == 'list':
+                values = []
+                for val in node.value:
+                    values.append(val)
+            for val in values:
+                self.visit(val)
+        return node.value
 
-                if stmt_type == Tokens.ST_ASSIGNMENT_STRING:
-                    if variable_name in variables:
-                        token_type = variables[variable_name]['type']
-                        if token_type == Tokens.CHAR:
-                            stmt_type = Tokens.ST_ASSIGNMENT_STRICT_CHAR
-                        elif token_type == Tokens.STRING:
-                            stmt_type = Tokens.ST_ASSIGNMENT_STRICT_STRING
-                        else:
-                            return f'At line {line_number}: Invalid assignment on type \'{token_type}\''
-                    else:
-                        return f'At line {line_number}: {StatusTypes.STATUS_UNDEFINED_VARIABLE}'
+    def visit_UnaryOp(self, node):
+        op = node.op.type
+        if op == PLUS:
+            return +self.visit(node.expr)
+        elif op == MINUS:
+            return -self.visit(node.expr)
 
-                elif stmt_type == Tokens.ST_ASSIGNMENT_MATH:
-                    if variables and variable_name in variables:
-                        token_type = variables[variable_name]['type']
-                        if token_type == Tokens.INT:
-                            stmt_type = Tokens.ST_ASSIGNMENT_STRICT_INT
-                        elif token_type == Tokens.FLOAT:
-                            stmt_type = Tokens.ST_ASSIGNMENT_STRICT_FLOAT
-                        else:
-                            return f'At line {line_number}: Invalid assignment on type \'{token_type}\''
-                    else:
-                        return f'At line {line_number}: {StatusTypes.STATUS_UNDEFINED_VARIABLE}'
-                else:
-                    if variable_name in variables:
-                        token_type = variables[variable_name]['type']
-                        if token_type in (Tokens.BOOL, Tokens.BOOL_TRUE, Tokens.BOOL_FALSE):
-                            pass
-                        else:
-                            return f'At line {line_number}: Invalid assignment on type \'{token_type}\''
-                    else:
-                        return f'At line {line_number}: {StatusTypes.STATUS_UNDEFINED_VARIABLE}'
+    def visit_Compound(self, node):
+        for child in node.children:
+            if child is not None:
+                self.visit(child)
 
-                is_valid = semantics.semantic_analyze(token_stream[2::], stmt_type, variables)
+    def visit_Assign(self, node):
+        values = [node.left]
+        if type(node.left.value).__name__ == 'list':
+            values = []
+            for val in node.left.value:
+                values.append(val)
+        for val in values:
+            var_name = val.value
+            if val.token.type != STRING_CONST and var_name not in self.DECLARED_VAR:
+                raise NameError(f'{repr(var_name)} variable is not defined.')
+            self.assign_var_value(var_name, self.visit(node.right))
+        return
 
-                if is_valid:
-                    if stmt_type in (Tokens.ST_ASSIGNMENT_STRICT_CHAR, Tokens.ST_ASSIGNMENT_STRICT_STRING):
-                        variables[variable_name]['value'] = string_evaluator.evaluate(token_stream[2::], variables)
-                        if not string_evaluator.status == StatusTypes.STATUS_OK:
-                            return f'At line {line_number}: {string_evaluator.status}'
-                    elif stmt_type in (Tokens.ST_ASSIGNMENT_STRICT_FLOAT, Tokens.ST_ASSIGNMENT_STRICT_INT):
-                        if stmt_type == Tokens.ST_ASSIGNMENT_STRICT_FLOAT:
-                            e_type = Tokens.FLOAT
-                        else:
-                            e_type = Tokens.INT
-                        variables[variable_name]['value'] = math_evaluator.evaluate(
-                            token_stream[2::], variables, e_type)
-                        if not math_evaluator.status == StatusTypes.STATUS_OK:
-                            return f'At line {line_number}: {math_evaluator.status}'
-                    else:
-                        variables[variable_name]['value'] = logic_evaluator.evaluate(token_stream[2::], variables)
-                        if not logic_evaluator.status == StatusTypes.STATUS_OK:
-                            return f'At line {line_number}: {logic_evaluator.status}'
-                else:
-                    return f'At line {line_number}: {semantics.status}'
+    def visit_Var(self, node):
+        var_name = node.value
+        var_value = self.GLOBAL_SCOPE.get(var_name)
+        if var_value is None:
+            raise NameError(repr(var_name))
+        else:
+            return var_value
 
-            if stmt_type == Tokens.ST_OUTPUT:
-                if semantics.semantic_analyze(token_stream, stmt_type, variables):
-                    temp = string_evaluator.evaluate(token_stream[2:], variables)
-                    if not string_evaluator.status == StatusTypes.STATUS_OK:
-                        return f'At line {line_number}: {string_evaluator.status}'
-                    output += temp[1:-1]  # remove quotes
-                else:
-                    return f'At line {line_number}: {semantics.status}'
+    def visit_NoOp(self, node):
+        pass
 
-        elif stmt_type == Tokens.ST_STOP:
-            infut = 3
-            completion_status = StatusTypes.STATUS_OK
+    def interpret(self):
+        tree = self.parser.parse()
+        if tree is None:
+            return ''
+        return self.visit(tree)
 
-        state = state_table[state][infut]
-        if state == 3:
-            break
 
-    if state == 2:
-        return output
-    else:
-        return completion_status
+def main():
+    import sys
+    text = open(sys.argv[1], 'r').read()
+
+    lexer = Lexer(text)
+    parser = Parser(lexer)
+    interpreter = Interpreter(parser, '')
+    try:
+        result = interpreter.interpret()
+    except Exception as e:
+        print(e)
+
+
+if __name__ == '__main__':
+    main()

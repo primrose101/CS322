@@ -1,0 +1,4 @@
+VAR str AS CHAR
+START
+OUTPUT: "Hello World" & str
+STOP 
