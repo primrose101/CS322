@@ -1,4 +1,4 @@
-from parser import Parser
+from legacy.parser import Parser
 from legacy.lexer import *
 
 
