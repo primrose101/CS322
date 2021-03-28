@@ -2,7 +2,7 @@
 
 from tkinter import (Label, Text, Frame, Button, RIGHT, DISABLED, NORMAL, END)
 from tkinter.constants import LEFT
-from cfpl import compile
+from legacy.cfpl import compile
 
 
 class Editor:
