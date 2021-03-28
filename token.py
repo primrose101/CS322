@@ -4,13 +4,6 @@ class Token(object):
         self.value = value
 
     def __str__(self):
-        """String representation of the class instance.
-
-        Examples:
-            Token(INT_CONST, 3)
-            Token(PLUS, '+')
-            Token(MUL, '*')
-        """
         return f'Token({self.type}, {self.value})'
 
     def __repr__(self):

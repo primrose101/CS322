@@ -2,21 +2,21 @@ from constants import *
 from token import Token
 
 
-class Lexer(object):
+class Lexer:
 
     def __init__(self, text):
-        self.lines = text.split("\n")
+        self.lines = text.split('\n')
         if len(self.lines) == 0:
             self.error()
         self.line = -1
         self.next_line()
 
     def process_text(self, text):
-        lines = text.split("\n")
-        new_lines = []
+        lines = text.split('\n')
+        new_lines = list()
         for line in lines:
             clean_line = line.strip()
-            if clean_line and clean_line[0] == '*':  # ignore comment
+            if clean_line and clean_line.startswith('*'):
                 continue
             new_lines.append(line)
         return "\n".join(new_lines)
@@ -25,17 +25,17 @@ class Lexer(object):
         self.line += 1
         if self.line < len(self.lines):
             line = self.lines[self.line].strip()
-            if len(line) == 0 or line[0] == '*':  # comment
+            if not line or line.startswith('*'):
                 return self.next_line()
             else:
                 self.pos = 0
-                self.text = ' ' + self.lines[self.line]  # MUST add space before or after
+                self.text = f' {self.lines[self.line]}'
                 self.current_char = self.text[self.pos]
         else:
             self.current_char = None
 
     def next_char(self):
-        """Advance the `pos` pointer and set the `current_char` variable."""
+        # Advance the `pos` pointer and set the `current_char` variable.
         self.pos += 1
         if self.pos < len(self.text):
             self.current_char = self.text[self.pos]
@@ -43,7 +43,7 @@ class Lexer(object):
             self.next_line()
 
     def error(self):
-        raise Exception('Invalid character ' + self.current_char)
+        raise Exception(f'At line {self.line} : Invalid character {self.current_char}')
 
     def peek(self, step=1):
         peek_pos = self.pos + step
@@ -86,9 +86,9 @@ class Lexer(object):
                 result += self.current_char
                 self.next_char()
 
-            token = Token('FLOAT_CONST', float(result))
+            token = Token(FLOAT_CONST, float(result))
         else:
-            token = Token('INT_CONST', int(result))
+            token = Token(INT_CONST, int(result))
 
         return token
 
@@ -96,10 +96,12 @@ class Lexer(object):
         if self.current_char == '\'':
             char = ''
         else:
-            char = self.current_char  # this is char
-            self.next_char()  # move to close single quote
-        self.next_char()  # move to next character
-        return Token('CHAR_CONST', char)
+            char = self.current_char
+            self.next_char()
+        if self.current_char != '\'':
+            self.error()
+        self.next_char()
+        return Token(CHAR_CONST, char)
 
     def string(self):
         result = ''
@@ -119,9 +121,9 @@ class Lexer(object):
                 break
             result += self.current_char if self.current_char != '#' else "\n"
             self.next_char()
-        if result in ['TRUE', 'FALSE']:
-            return Token('BOOL_CONST', result)
-        return Token('STRING_CONST', result)
+        if result in ('TRUE', 'FALSE'):
+            return Token(BOOL_CONST, result)
+        return Token(STRING_CONST, result)
 
     def _id(self):
         """Handle identifiers and reserved keywords"""
@@ -130,15 +132,14 @@ class Lexer(object):
             result += self.current_char
             self.next_char()
 
+        if result in ('TRUE', 'FALSE'):
+            self.error()
         token = RESERVED_KEYWORDS.get(result, Token(ID, result))
         return token
 
     def get_next_token(self):
-        """Lexical analyzer (also known as scanner or tokenizer)
 
-        This method is responsible for breaking a sentence
-        apart into tokens. One token at a time.
-        """
+        token = None
 
         while self.current_char is not None:
 

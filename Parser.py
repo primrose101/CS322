@@ -2,18 +2,16 @@ from constants import *
 from ast import *
 
 
-class Parser(object):
+class Parser:
     def __init__(self, lexer):
         self.lexer = lexer
-        # set current token to the first token taken from the input
         self.current_token = self.lexer.get_next_token()
 
     def error(self):
         line = str(self.lexer.line + 1)
         if self.current_token.type == EOF:
             line = str(self.lexer.line - 1)
-            #line = str(self.lexer.line)
-        msg = 'Invalid syntax on line ' + line + ': ' + self.lexer.text
+        msg = f'On line {line - 1}: Invalid syntax{self.lexer.text}'
         raise Exception(msg)
 
     def keep(self, token_type):

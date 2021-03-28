@@ -65,4 +65,6 @@ RESERVED_KEYWORDS = {
     'IF': Token('IF', 'IF'),
     'ELSE': Token('ELSE', 'ELSE'),
     'WHILE': Token('WHILE', 'WHILE'),
+    # 'TRUE': Token('BOOL', 'BOOL'),
+    # 'FALSE': Token('BOOL', 'BOOL')
 }

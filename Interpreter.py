@@ -1,8 +1,8 @@
-from parser import *
+from parser import Parser
 from lexer import *
 
 
-class NodeVisitor(object):
+class NodeVisitor:
     def visit(self, node):
         method_name = f'visit_{type(node).__name__}'
         visitor = getattr(self, method_name, self.generic_visit)
@@ -65,7 +65,7 @@ class Interpreter(NodeVisitor):
 
     def visit_VarDecl(self, node):
         if node.var_node.value in self.DECLARED_VAR:
-            raise NameError(f'{repr(node.var_node.value)} variable already defined')
+            raise NameError(f'Variable {repr(node.var_node.value)} already defined.')
         if node.var_node.default_value == None:
             if node.type_node.value == INT:
                 default_value = 0
@@ -274,20 +274,3 @@ class Interpreter(NodeVisitor):
         if tree is None:
             return ''
         return self.visit(tree)
-
-
-def main():
-    import sys
-    text = open(sys.argv[1], 'r').read()
-
-    lexer = Lexer(text)
-    parser = Parser(lexer)
-    interpreter = Interpreter(parser, '')
-    try:
-        result = interpreter.interpret()
-    except Exception as e:
-        print(e)
-
-
-if __name__ == '__main__':
-    main()

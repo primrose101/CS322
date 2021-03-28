@@ -1,4 +1,4 @@
-class AST(object):
+class AST:
     pass
 
 

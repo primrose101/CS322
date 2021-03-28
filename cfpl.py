@@ -11,7 +11,6 @@ def compile(program, inputs):
 
     try:
         result = interpreter.interpret()
-    except Exception as e:
-        return e
-
-    return interpreter.output
+        return interpreter.output
+    except Exception as error:
+        return error
