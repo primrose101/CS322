@@ -1,7 +1,6 @@
 # UI for CIT-U's First Programming Language
 
 from tkinter import (Label, Text, Frame, Button, RIGHT, DISABLED, NORMAL, END)
-from tkinter.constants import LEFT
 from legacy.cfpl import compile
 
 
