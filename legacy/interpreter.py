@@ -144,7 +144,6 @@ class Interpreter(NodeVisitor):
         for val in node.value:
             data_types.append(self.DECLARED_VAR[val.value])
 
-        print(self.inputs)
         values = self.inputs.split(',')
         if len(values) != len(node.value):
             raise NameError("Invalid inputs.")
