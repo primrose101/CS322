@@ -46,9 +46,11 @@ def interpret(lines, custom_input):
 
     for line_number, line in enumerate(lines.split('\n'), 1):
 
+        line = line.strip()
+
         is_valid = True
 
-        if not line.strip() or line.startswith('*'):  # comment algorithm
+        if not line or line.startswith('*'):  # comment algorithm
             continue
 
         token_stream = lexer.lexicalize(line)
