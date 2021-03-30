@@ -14,7 +14,7 @@ STOP
 STOP
 """
 
-inputs = "3, 7"
+inputs = "3, 4"
 
 if 'IF' in statements or 'WHILE' in statements:
     result = compile(statements, inputs)

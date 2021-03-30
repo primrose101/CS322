@@ -145,8 +145,8 @@ class Interpreter(NodeVisitor):
             data_types.append(self.DECLARED_VAR[val.value])
 
         values = self.inputs.split(',')
-        if len(values) != len(node.value):
-            raise NameError("Invalid inputs.")
+        if (idens := len(values)) != (inputs := len(node.value)):
+            raise NameError(f'Expected {inputs} inputs but got {idens}')
         i = 0
         for val in node.value:
             value = values[i]
