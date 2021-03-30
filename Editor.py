@@ -2,6 +2,7 @@
 
 from tkinter import (Label, Text, Frame, Button, RIGHT, DISABLED, NORMAL, END)
 from legacy.cfpl import compile
+from Interpreter import interpret
 
 
 class Editor:
@@ -82,7 +83,7 @@ class Editor:
         self.console.config(state=NORMAL)
         code = self.get_text()
         input = self.get_input_text()
-        message = compile(code, input)
+        message = interpret(code, input)
         self.console.delete('1.0', END)
         self.console.insert(END, message)
         self.console.config(state=DISABLED)
