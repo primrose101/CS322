@@ -8,9 +8,9 @@ class LogicalExpression:
         self.value = 0
         self.status = StatusTypes.STATUS_OK
         self. precedence = {
-            "~": 3,
-            "||": 3,
-            "&&": 3,
+            "NOT": 3,
+            "OR": 3,
+            "AND": 3,
             "<>": 2,
             "==": 2,
             ">=": 2,
@@ -20,8 +20,8 @@ class LogicalExpression:
             "(": 1,
         }
         self.op_list = [
-            '&&',
-            '||',
+            'AND',
+            'OR',
             '==',
             '<=',
             '<>',
@@ -89,9 +89,9 @@ class LogicalExpression:
             if token in self.op_list:
                 right = values.pop()
                 left = values.pop()
-                if token == '&&':
+                if token == 'AND':
                     val = left and right
-                elif token == '||':
+                elif token == 'OR':
                     val = left or right
                 elif token == '==':
                     val = left == right

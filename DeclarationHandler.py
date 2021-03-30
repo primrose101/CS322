@@ -41,7 +41,7 @@ class DeclarationHandler:
         if type == Tokens.KW_FLOAT:
             return float(value)
         if type == Tokens.KW_BOOLEAN:
-            return value == Tokens.BOOL_TRUE
+            return value == 'TRUE'
 
     def set_variable_by_keyword(self, variable_type):
         if variable_type == Tokens.KW_STRING:

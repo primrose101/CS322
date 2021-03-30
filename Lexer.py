@@ -21,8 +21,8 @@ class Lexer:
         '=': Tokens.EQUALS,
         '==': Tokens.LOGIC_EQUAL,
         '<>': Tokens.NOT_EQUAL,
-        '&&': Tokens.AND,
-        '||': Tokens.OR,
+        '&&': Tokens.ERROR,
+        '||': Tokens.ERROR,
     }
 
     def lexicalize(self, statement):
@@ -72,6 +72,10 @@ class Lexer:
             match_dict['Operator'] = operator_count
             logic_op_count = logical_operator.logicalop_fsm(statement, index)
             match_dict['LogicOp'] = logic_op_count
+            and_count = logical_operator.and_fsm(statement, index)
+            match_dict[Tokens.AND] = and_count
+            or_count = logical_operator.or_fsm(statement, index)
+            match_dict[Tokens.OR] = or_count
 
             # data types match counts
             int_count = data_types.int_lexer(statement, index)
@@ -84,12 +88,12 @@ class Lexer:
             match_dict[Tokens.UNARY_FLOAT] = unary_float_count
             char_count = data_types.char_lexer(statement, index)
             match_dict[Tokens.CHAR] = char_count
-            string_count = data_types.string_lexer(statement, index)
-            match_dict[Tokens.STRING] = string_count
             true_bool_count = data_types.true_bool_lexer(statement, index)
             match_dict[Tokens.BOOL_TRUE] = true_bool_count
             false_bool_count = data_types.false_bool_lexer(statement, index)
             match_dict[Tokens.BOOL_FALSE] = false_bool_count
+            string_count = data_types.string_lexer(statement, index)
+            match_dict[Tokens.STRING] = string_count
 
             # identifier
             iden_count = identifier.iden_fsm(statement, index)
@@ -106,6 +110,8 @@ class Lexer:
             token_type = self.get_key(match_dict, longest_match)
 
             match_string = statement[index:index+longest_match]
+            if match_string in ('"TRUE"', '"FALSE"'):
+                match_string = match_string[1:-1]  # remove double quotes
 
             if token_type == Tokens.STRING:
                 if longest_match == 1 or not (match_string.startswith('"') and match_string.endswith('"')):

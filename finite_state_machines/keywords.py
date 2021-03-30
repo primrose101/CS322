@@ -212,15 +212,12 @@ def kwboolean_fsm(string_input, index):
     i = index
 
     table = [
-        [1, 8, 8, 8, 8, 8, 8, 8],
-        [8, 2, 8, 8, 8, 8, 8, 8],
-        [8, 3, 8, 8, 8, 8, 8, 8],
-        [8, 8, 8, 4, 8, 8, 8, 8],
-        [8, 8, 8, 8, 5, 8, 8, 8],
-        [8, 8, 8, 8, 8, 6, 8, 8],
-        [8, 8, 8, 8, 8, 8, 7, 8],
-        [8, 8, 8, 8, 8, 8, 8, 8],
-        [8, 8, 8, 8, 8, 8, 8, 8],
+        [1, 5, 5, 5],
+        [5, 2, 5, 5],
+        [5, 3, 5, 5],
+        [5, 5, 4, 5],
+        [5, 5, 5, 5],
+        [5, 5, 5, 5],
     ]
 
     state = 0
@@ -233,22 +230,14 @@ def kwboolean_fsm(string_input, index):
             inputstate = 0
         elif string_input[i] == 'O':
             inputstate = 1
-        elif string_input[i] == 'O':
-            inputstate = 2
         elif string_input[i] == 'L':
-            inputstate = 3
-        elif string_input[i] == 'E':
-            inputstate = 4
-        elif string_input[i] == 'A':
-            inputstate = 5
-        elif string_input[i] == 'N':
-            inputstate = 6
+            inputstate = 2
         else:
-            inputstate = 7
+            inputstate = 3
 
         state = table[state][inputstate]
 
-        if state == 8:
+        if state == 5:
             break
 
         i += 1
