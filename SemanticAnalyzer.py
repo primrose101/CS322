@@ -177,7 +177,8 @@ class SemanticAnalyzer:
         ignored_values = (Tokens.LOGIC_EQUAL, Tokens.EQUALS, Tokens.AND, Tokens.OR, Tokens.GREATER_THAN, Tokens.GREATER_OR_EQUAL,
                           Tokens.LESS_THAN, Tokens.LESS_OR_EQUAL, Tokens.NOT_EQUAL, Tokens.BOOL_TRUE, Tokens.BOOL_FALSE)
 
-        data_types = (Tokens.BOOL_TRUE, Tokens.BOOL_FALSE, Tokens.INT, Tokens.FLOAT, Tokens.STRING, Tokens.CHAR)
+        data_types = (Tokens.BOOL, Tokens.BOOL_TRUE, Tokens.BOOL_FALSE,
+                      Tokens.INT, Tokens.FLOAT, Tokens.STRING, Tokens.CHAR)
 
         is_valid = True
 
