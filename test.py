@@ -16,4 +16,9 @@ STOP
 
 inputs = "3, 7"
 
-print(compile(statements, inputs))
+if 'IF' in statements or 'WHILE' in statements:
+    result = compile(statements, inputs)
+else:
+    result = interpret(statements, inputs)
+
+print(result)
