@@ -151,7 +151,7 @@ def interpret(lines, custom_input):
 
         elif stmt_type == Tokens.ST_STOP:
             infut = 3
-            completion_status = StatusTypes.STATUS_OK
+            completion_status = StatusTypes.STATUS_STRUCTURE_ERROR
 
         state = state_table[state][infut]
         if state == 3:

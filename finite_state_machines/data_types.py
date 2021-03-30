@@ -143,29 +143,33 @@ def string_lexer(string_input, index):
 
 def true_bool_lexer(string_input, index):
     i = index
-    state_table = [[1, 5, 5, 5, 5],
-                   [5, 2, 5, 5, 5],
-                   [5, 5, 3, 5, 5],
-                   [5, 5, 5, 4, 5],
-                   [5, 5, 5, 5, 5],
-                   [5, 5, 5, 5, 5], ]
+    state_table = [[1, 7, 7, 7, 7, 7],
+                   [7, 2, 7, 7, 7, 7],
+                   [7, 7, 3, 7, 7, 7],
+                   [7, 7, 7, 4, 7, 7],
+                   [7, 7, 7, 7, 5, 7],
+                   [6, 7, 7, 7, 7, 7],
+                   [7, 7, 7, 7, 7, 7],
+                   [7, 7, 7, 7, 7, 7], ]
 
     state = 0
     infut = 0
     string_length = len(string_input)
     while i != string_length:
-        if string_input[i] == 'T':
+        if string_input[i] == '"':
             infut = 0
-        elif string_input[i] == 'R':
+        elif string_input[i] == 'T':
             infut = 1
-        elif string_input[i] == 'U':
+        elif string_input[i] == 'R':
             infut = 2
-        elif string_input[i] == 'E':
+        elif string_input[i] == 'U':
             infut = 3
-        else:
+        elif string_input[i] == 'E':
             infut = 4
+        else:
+            infut = 5
         state = state_table[state][infut]
-        if state == 5:
+        if state == 7:
             break
         i += 1
     return i - index
@@ -173,32 +177,35 @@ def true_bool_lexer(string_input, index):
 
 def false_bool_lexer(string_input, index):
     i = index
-    state_table = [[1, 6, 6, 6, 6, 6],
-                   [6, 2, 6, 6, 6, 6],
-                   [6, 6, 3, 6, 6, 6],
-                   [6, 6, 6, 4, 6, 6],
-                   [6, 6, 6, 6, 5, 6],
-                   [6, 6, 6, 6, 6, 6],
-                   [6, 6, 6, 6, 6, 6], ]
-
+    state_table = [[1, 8, 8, 8, 8, 8, 8],
+                   [8, 2, 8, 8, 8, 8, 8],
+                   [8, 8, 3, 8, 8, 8, 8],
+                   [8, 8, 8, 4, 8, 8, 8],
+                   [8, 8, 8, 8, 5, 8, 8],
+                   [8, 8, 8, 8, 8, 6, 8],
+                   [7, 8, 8, 8, 8, 8, 8],
+                   [8, 8, 8, 8, 8, 8, 8],
+                   [8, 8, 8, 8, 8, 8, 8], ]
     state = 0
     infut = 0
     string_length = len(string_input)
     while i != string_length:
-        if string_input[i] == 'F':
+        if string_input[i] == '"':
             infut = 0
-        elif string_input[i] == 'A':
+        elif string_input[i] == 'F':
             infut = 1
-        elif string_input[i] == 'L':
+        elif string_input[i] == 'A':
             infut = 2
-        elif string_input[i] == 'S':
+        elif string_input[i] == 'L':
             infut = 3
-        elif string_input[i] == 'E':
+        elif string_input[i] == 'S':
             infut = 4
-        else:
+        elif string_input[i] == 'E':
             infut = 5
+        else:
+            infut = 6
         state = state_table[state][infut]
-        if state == 6:
+        if state == 8:
             break
         i += 1
     return i - index
